@@ -116,4 +116,10 @@ class MemoRepositoryTests {
 		memoRepository.deleteMemoByMnoLessThan(10L); //10보다 작은거 삭제
 	}
 
+	@Test
+	public void testGetNativeQueryResult(){
+		List<Memo> result=memoRepository.getNativeQueryResult();
+		result.forEach(memo -> System.out.println(memo));
+	}
+
 }
