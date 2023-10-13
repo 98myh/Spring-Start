@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .target1{background-color:red;}
+        .target2{background-color:blue;}
+
+    </style>
+</head>
+<body>
+    <ul>
+        <li th:each="dto,state : ${list}" th:class="${dto.sno%2==0}?'target1':'target2'">
+             [[${state.index}]] --- [[${state.count}]] <!--inline 표기법 index는 0부터 시작 count는 1부터 시작-->
+            <span th:if="${dto.sno % 5 == 0}" th:text="${'---------------'+dto.sno}"></span>
+            <span th:unless="${dto.sno % 5 == 0}" th:text="${dto.first}"></span>
+
+            <span th:text="${dto.sno % 2==0}?'짝수번째' : '홀수번째'"></span>
+        </li>
+    </ul>
+    <ul>
+        <th:block th:each="dto,state:${list}">
+            <li th:text="${dto.sno%5==0}?${dto.sno}:${dto.first}"></li>
+        </th:block>
+    </ul>
+</body>
+</html>

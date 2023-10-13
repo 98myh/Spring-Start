@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1 th:text="${result}"></h1>
+    <h1 th:text="${dto}"></h1>
+    <h1 th:text="${test}"></h1>
+    <script th:inline="javascript">
+        var result=/*[[${result}]]*/'result';
+        var dto=[[${dto}]];
+
+        var jsonObj=JSON.parse('\"'+dto+'\"');
+
+        var jsonStr=JSON.stringify(dto);
+
+        console.log(jsonObj);
+        console.log(jsonStr);
+    </script>
+</body>
+</html>
