@@ -28,7 +28,7 @@ class GuestbookRepositoryTests {
 			Guestbook guestbook=Guestbook.builder()
 					.title("Tittle..."+i)
 					.content("Content..."+i)
-					.writer("user"+(1%10))
+					.writer("user"+(i%10))
 					.build();
 			System.out.println(guestbookRepository.save(guestbook));
 		});
