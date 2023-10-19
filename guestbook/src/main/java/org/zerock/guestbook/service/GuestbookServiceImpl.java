@@ -12,6 +12,7 @@ import org.zerock.guestbook.dto.PageResultDTO;
 import org.zerock.guestbook.entity.Guestbook;
 import org.zerock.guestbook.repository.GuestbookRepository;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -29,6 +30,12 @@ public class GuestbookServiceImpl implements GuestbookService {
 			}
 		};
 		return new PageResultDTO<>(result,fn); //dtoList 넘어옴
+	}
+
+	@Override
+	public GuestbookDTO read(Long gno) {
+		Optional<Guestbook> result=repository.findById(gno); //Optional로 null이어도 오류X
+		return result.isPresent()?entityToDto(result.get()):null;
 	}
 
 	private final GuestbookRepository repository; //final을 해야만 순환참조 끊을수 있음`
