@@ -38,6 +38,22 @@ public class GuestbookServiceImpl implements GuestbookService {
 		return result.isPresent()?entityToDto(result.get()):null;
 	}
 
+	@Override
+	public void modify(GuestbookDTO dto) {
+		Optional<Guestbook> result=repository.findById(dto.getGno());
+		if(result.isPresent()){
+			Guestbook entity=result.get();
+			entity.changeTitle(dto.getTitle());
+			entity.changeContent(dto.getContent());
+			repository.save(entity);
+		}
+	}
+
+	@Override
+	public void remove(Long gno) {
+		repository.deleteById(gno);
+	}
+
 	private final GuestbookRepository repository; //final을 해야만 순환참조 끊을수 있음`
 	@Override
 	public Long register(GuestbookDTO dto) {

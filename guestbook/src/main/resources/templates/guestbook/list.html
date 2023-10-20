@@ -17,8 +17,8 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="dto : ${result.dtoList}"
-                th:onclick="|location.href='@{/guestbook/read(gno= ${dto.gno}, page= ${result.page})}'|"
+            <tr th:each="dto : ${result.dtoList}" style="cursor:pointer;"
+                th:onclick="|detailView(${dto.gno},${result.page})|"
                 class="guestbook">
                 <th scope="row">
                     [[${dto.gno}]]
@@ -58,9 +58,13 @@
             </div>
         </div>
         <script th:inline="javascript">
+            function detailView(gno,page){
+                url=/*[[@{/guestbook/read}]]*/'url';
+                location.href=url+`?gno=${gno}&page=${page}`;
+            }
+
             window.onload = function () {
                 var msg = /*[[${msg}]]*/'msg';
-                console.log(msg);
                 if (msg === '' || history.state) {
                     return
                 }
