@@ -3,12 +3,15 @@ package org.zerock.guestbook.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.guestbook.dto.GuestbookDTO;
 import org.zerock.guestbook.dto.PageRequestDTO;
+import org.zerock.guestbook.dto.PageResultDTO;
+import org.zerock.guestbook.entity.Guestbook;
 import org.zerock.guestbook.service.GuestbookService;
 
 @Controller
@@ -66,11 +69,15 @@ public class GuestbookController {
 	}
 
 	@PostMapping("/remove")
-	public String remove(Long gno, RedirectAttributes ra,PageRequestDTO pageRequestDTO){
+	public String remove(Long gno, RedirectAttributes ra, PageRequestDTO pageRequestDTO){
+
 		log.info("remove...");
 		service.remove(gno);
-//		if(pageRequestDTO.getPageable(Sort.by())); 수정부분
-		ra.addAttribute("page",pageRequestDTO.getPage());
+		if(service.getList(pageRequestDTO).getDtoList().isEmpty()){
+			ra.addAttribute("page",pageRequestDTO.getPage()-1);
+		}else{
+			ra.addAttribute("page",pageRequestDTO.getPage());
+		}
 		ra.addFlashAttribute("msg",gno+" 삭제");
 		return "redirect:/guestbook/list";
 	}

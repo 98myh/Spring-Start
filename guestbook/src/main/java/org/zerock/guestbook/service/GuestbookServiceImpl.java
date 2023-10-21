@@ -17,8 +17,11 @@ import java.util.function.Function;
 
 @Service
 @Log4j2
-@RequiredArgsConstructor // 종속성 자동 주입
+@RequiredArgsConstructor // 종속성 자동 주입 , repository를 사용하고 싶으면 무조건 사용
 public class GuestbookServiceImpl implements GuestbookService {
+
+	private final GuestbookRepository repository; //final을 해야만 순환참조 끊을수 있음`
+
 	@Override
 	public PageResultDTO<GuestbookDTO, Guestbook> getList(PageRequestDTO requestDTO) {
 		Pageable pageable=requestDTO.getPageable(Sort.by("gno").descending());
@@ -51,10 +54,10 @@ public class GuestbookServiceImpl implements GuestbookService {
 
 	@Override
 	public void remove(Long gno) {
+		System.out.println(gno+"test.............................");
 		repository.deleteById(gno);
 	}
 
-	private final GuestbookRepository repository; //final을 해야만 순환참조 끊을수 있음`
 	@Override
 	public Long register(GuestbookDTO dto) {
 		log.info("DTO....... :  "+dto);

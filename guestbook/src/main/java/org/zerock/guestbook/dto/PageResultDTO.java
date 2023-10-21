@@ -25,8 +25,8 @@ public class PageResultDTO<DTO,EN> {
 	//생성자를 통해 dtoList를 초기화
 	//Page<EN>은 하나의 항목(하나의 행) EN은 엔터티라는 뜻이지만 Object -> 어떤 값이 들어올지 모르기때문
 	public PageResultDTO(Page<EN> result, Function<EN,DTO> fn){ // Function<EN,DTO>는 엔티티를 DTO로 변환해 주는 기능
-		dtoList=result.stream().map(fn).collect(Collectors.toList());
-		totalPage= result.getTotalPages(); // getTotalPages는 Page안에 있는 메서드
+		dtoList = result.stream().map(fn).collect(Collectors.toList());
+		totalPage = result.getTotalPages(); // getTotalPages는 Page안에 있는 메서드
 		makePageList(result.getPageable());
 	}
 
