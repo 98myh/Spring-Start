@@ -2,25 +2,25 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{/layout/basic :: setContent(~{this:: content})}">
     <th:block th:fragment="content">
-        <h1>GuestBook List Page
+        <h1>GuestBook List Page 1234
             <span>
-                <a th:href="@{/guestbook/register}" class="btn btn-outline-primary">REGISTER</a>
-            </span>
+        <a th:href="@{/guestbook/register}" class="btn btn-outline-primary">REGISTER</a>
+      </span>
         </h1>
-        <form th:action="@{/guestbook/list}" id="srchFrm" method="get">
-            <input type="hidden" name="page" value="1"/> <!--value=1 - 처음 페이지가 열릴때는 1페이지-->
-            <div class="input-group ">
+        <form th:action="@{/guestbook/list}" id="formSearch" method="get">
+            <input type="hidden" name="page" value="1">
+            <div class="input-group">
                 <div class="input-group-prepend">
                     <select class="form-control custom-select" name="type">
-                        <option th:selected="${pageRequestDTO.type==null}">----------</option>
-                        <option value="t" th:selected="${pageRequestDTO.type=='t'}">제목</option>
-                        <option value="c" th:selected="${pageRequestDTO.type=='c'}">내용</option>
-                        <option value="w" th:selected="${pageRequestDTO.type=='w'}">작성자</option>
-                        <option value="tc" th:selected="${pageRequestDTO.type=='tc'}">제목+내용</option>
-                        <option value="tcw" th:selected="${pageRequestDTO.type=='tcw'}">제목+내용+작성자</option>
+                        <option th:selected="${pageRequestDTO.type == null}">-------</option>
+                        <option value="t" th:selected="${pageRequestDTO.type == 't'}">제목</option>
+                        <option value="c" th:selected="${pageRequestDTO.type == 'c'}">내용</option>
+                        <option value="w" th:selected="${pageRequestDTO.type == 'w'}">작성자</option>
+                        <option value="tc" th:selected="${pageRequestDTO.type == 'tc'}">제목+내용</option>
+                        <option value="tcw" th:selected="${pageRequestDTO.type == 'tcw'}">제목+내용+작성자</option>
                     </select>
                 </div>
-                <input type="text" name="keyword" class="form-control mx-2" th:value="${pageRequestDTO.keyword}" disabled/>
+                <input type="text" name="keyword" class="form-control custom-keyword" th:value="${pageRequestDTO.keyword}">
                 <div class="input-group-append" id="button-addon4">
                     <button class="btn btn-outline-primary btn-search" type="button">Search</button>
                     <button class="btn btn-outline-secondary btn-clear" type="button">Clear</button>
@@ -37,28 +37,25 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="dto : ${result.dtoList}" style="cursor:pointer;"
-                th:onclick="|detailView(${dto.gno},${result.page})|"
-                class="guestbook">
-                <th scope="row">
-                    [[${dto.gno}]]
-                </th>
+            <tr th:each="dto : ${result.dtoList}" style="cursor: pointer;"
+                th:onclick="|location.href='@{/guestbook/read(gno=${dto.gno},page=${result.page},type=${pageRequestDTO.type},keyword=${pageRequestDTO.keyword})}'|">
+                <th scope="row">[[${dto.gno}]]</th>
                 <th scope="row">[[${dto.title}]]</th>
                 <th scope="row">[[${dto.writer}]]</th>
                 <th scope="row">[[${#temporals.format(dto.regDate,'yyyy/MM/dd')}]]</th>
             </tr>
-
             </tbody>
         </table>
         <ul class="pagination h-100 justify-content-center align-items-center">
             <li class="page-item " th:if="${result.prev}">
-                <a class="page-link" th:href="@{/guestbook/list(page=${result.start-1})}" tabindex="-1">Previous</a>
+                <a class="page-link" th:href="@{/guestbook/list(page=${result.start-1}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}" tabindex="-1">Previous</a>
             </li>
             <li th:class=" 'page-item ' + ${result.page == page?'active':''} " th:each="page:${result.pageList}">
-                <a class="page-link" th:href="@{/guestbook/list(page=${page})},type=${pageRequestDTO.type},keyword=${pageRequestDTO.keyword}">[[${page}]]</a>
+                <a class="page-link"
+                   th:href="@{/guestbook/list(page=${page}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}">[[${page}]]</a>
             </li>
             <li class="page-item " th:if="${result.next}">
-                <a class="page-link" th:href="@{/guestbook/list(page=${result.end+1})}">Next</a>
+                <a class="page-link" th:href="@{/guestbook/list(page=${result.end+1}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}">Next</a>
             </li>
         </ul>
         <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -78,55 +75,51 @@
             </div>
         </div>
         <script th:inline="javascript">
-            function detailView(gno,page){
-                url=/*[[@{/guestbook/read}]]*/'url';
-                location.href=url+`?gno=${gno}&page=${page}`;
+            function detailView(gno,page,type,keyword){
+              url = /*[[@{/guestbook/read}]]*/'url'
+              location.href = url + '?gno='+gno+'&page='+page+'&type='+type+'&keyword='+keyword
             }
 
             window.onload = function () {
-                var msg = /*[[${msg}]]*/'msg';
-                if (msg === '' || history.state) {
-                    return
-                }
-                history.replaceState({}, null, null);
+              if (msg === '' || history.state)  return
+              var msg = /*[[${msg}]]*/'msg';
+              console.log(msg);
+              history.replaceState({}, null, null)
+              if(msg) {
+                const arr = msg.split(" ")
+                const gno = arr[0];
+                const noti = arr[1];
+                const myModal = new bootstrap.Modal(document.getElementById('myModal'), { backdrop: true });
+                document.querySelector(".modal-title").textContent = noti + ' 완료';
+                document.querySelector(".modal-body").innerHTML = `<p>${gno}번 글이  ${noti}되었습니다.</p>`;
+                myModal.show()
+              }
 
-                if (msg) {
-                    const gno = msg.split(" ")[0];
-                    const noti = msg.split(" ")[1];
-
-                    const myModal = new bootstrap.Modal(document.getElementById('myModal'), {backdrop: true});
-                    document.querySelector(".modal-title").textContent = noti + ' 완료';
-                    document.querySelector(".modal-body").innerHTML = `<p>${gno}번 글이 ${noti} 되었습니다.</p>`;
-                    myModal.show()
+              var formSearch = document.querySelector("#formSearch")
+              var btnSearch = document.querySelector(".btn-search")
+              var btnClear = document.querySelector(".btn-clear")
+              var selType = document.querySelector(".custom-select")
+              var txtKeyword = document.querySelector(".custom-keyword")
+              btnSearch.onclick = () => formSearch.submit()
+              btnClear.onclick = () => {
+                selType.options[0].selected=true;
+                txtKeyword.value="";
+                txtKeyword.disabled = true;
+                formSearch.submit()
+              }
+              selType.onchange = () => {
+                if(selType.options[0].selected == true){
+                  txtKeyword.disabled = true;
+                  txtKeyword.value = '';
+                } else {
+                  txtKeyword.disabled = false;
                 }
+              }
+              const requestKeyword = /*[[${pageRequestDTO.keyword}]]*/'keyword'
+              txtKeyword.disabled = requestKeyword==null?true:(requestKeyword.trim() == "")?true:false;
             }
-                var searchFrm=document.querySelector("#srchFrm");
-                var btnSearch=document.querySelector(".btn-search");
-                var btnClear=document.querySelector(".btn-clear");
-                var selType=document.querySelector("#srchFrm select[name='type']");
-                var txtKeyword=document.querySelector("#srchFrm input[name='keyword']");
 
-                btnSearch.onclick=()=>{
-                    searchFrm.submit();
-                }
 
-                btnClear.onclick=()=>{
-                    selType.options[0].selected=true;
-                    txtKeyword.value="";
-                    txtKeyword.disabled=true;
-                    searchFrm.submit();
-
-                }
-                selType.onchange=()=>{
-                    if(selType.options[0].selected==true){
-                        txtKeyword.disabled=true;
-                        txtKeyword.value='';
-                    }else{
-                        txtKeyword.disabled=false;
-                    }
-                }
-                const requestKeyword=/*[[${pageRequestDTO.keyword}]]*/'keyword';
-                txtKeyword.disabled=requestKeyword==null?true:(requestKeyword.trim()=="")?true:false;
         </script>
     </th:block>
 </th:block>

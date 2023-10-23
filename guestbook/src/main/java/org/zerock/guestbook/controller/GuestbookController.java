@@ -73,7 +73,7 @@ public class GuestbookController {
 
 		log.info("remove...");
 		service.remove(gno);
-		if(service.getList(pageRequestDTO).getDtoList().isEmpty()){
+		if(service.getList(pageRequestDTO).getDtoList().isEmpty()&&pageRequestDTO.getPage()!=1){
 			ra.addAttribute("page",pageRequestDTO.getPage()-1);
 		}else{
 			ra.addAttribute("page",pageRequestDTO.getPage());

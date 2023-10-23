@@ -50,8 +50,8 @@
             </div>
         </div>
 
-        <a th:href="@{/guestbook/modify(gno=${dto.gno},page=${requestDTO.page})}" class="btn btn-primary">Modify</a>
-        <a th:href="@{/guestbook/list(page=${requestDTO.page})}" class="btn btn-info">List</a>
+        <a th:href="@{/guestbook/modify(gno=${dto.gno},page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}" class="btn btn-primary">Modify</a>
+        <a th:href="@{/guestbook/list(page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}" class="btn btn-info">List</a>
         <script th:inline="javascript">
             window.onload = function () {
                 var msg = /*[[${msg}]]*/'msg';
