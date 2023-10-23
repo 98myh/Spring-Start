@@ -13,7 +13,8 @@ import org.springframework.data.domain.Sort;
 public class PageRequestDTO {
 	private int page;
 	private int size;
-
+	private String type;
+	private String keyword;
 	//페이지 요청을 위한 객체
 	public PageRequestDTO() {
 		this.page=1;
@@ -24,4 +25,6 @@ public class PageRequestDTO {
 	public Pageable getPageable(Sort sort){
 		return PageRequest.of(page -1,size,sort);
 	}
+
+
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.zerock</groupId>
-	<artifactId>guestbook</artifactId>
+	<artifactId>ex4</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>guestbook</name>
-	<description>Demo project for Spring Boot</description>
+	<name>ex4</name>
+	<description>ex4</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -51,23 +51,22 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!--querydsl-->
+		<!-- 동적쿼리 생성(동적 쿼리 조합)을 위한 querydsl maven 의존성 추가      -->
+		<!-- https://mvnrepository.com/artifact/com.querydsl/querydsl-jpa -->
 		<dependency>
 			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-jpa</artifactId>
 			<classifier>jakarta</classifier>
 			<version>5.0.0</version>
 		</dependency>
-
-		<!--querydsl-apt -->
+		<!-- https://mvnrepository.com/artifact/com.querydsl/querydsl-apt -->
 		<dependency>
 			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-apt</artifactId>
 			<classifier>jakarta</classifier>
 			<version>5.0.0</version>
+			<scope>provided</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>

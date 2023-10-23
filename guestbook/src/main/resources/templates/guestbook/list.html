@@ -4,9 +4,29 @@
     <th:block th:fragment="content">
         <h1>GuestBook List Page
             <span>
-        <a th:href="@{/guestbook/register}" class="btn btn-outline-primary">REGISTER</a>
-      </span>
+                <a th:href="@{/guestbook/register}" class="btn btn-outline-primary">REGISTER</a>
+            </span>
         </h1>
+        <form th:action="@{/guestbook/list}" id="srchFrm" method="get">
+            <input type="hidden" name="page" value="1"/> <!--value=1 - 처음 페이지가 열릴때는 1페이지-->
+            <div class="input-group ">
+                <div class="input-group-prepend">
+                    <select class="form-control custom-select" name="type">
+                        <option th:selected="${pageRequestDTO.type==null}">----------</option>
+                        <option value="t" th:selected="${pageRequestDTO.type=='t'}">제목</option>
+                        <option value="c" th:selected="${pageRequestDTO.type=='c'}">내용</option>
+                        <option value="w" th:selected="${pageRequestDTO.type=='w'}">작성자</option>
+                        <option value="tc" th:selected="${pageRequestDTO.type=='tc'}">제목+내용</option>
+                        <option value="tcw" th:selected="${pageRequestDTO.type=='tcw'}">제목+내용+작성자</option>
+                    </select>
+                </div>
+                <input type="text" name="keyword" class="form-control mx-2" th:value="${pageRequestDTO.keyword}" disabled/>
+                <div class="input-group-append" id="button-addon4">
+                    <button class="btn btn-outline-primary btn-search" type="button">Search</button>
+                    <button class="btn btn-outline-secondary btn-clear" type="button">Clear</button>
+                </div>
+            </div>
+        </form>
         <table class="table table-striped">
             <thead>
             <tr>
@@ -35,7 +55,7 @@
                 <a class="page-link" th:href="@{/guestbook/list(page=${result.start-1})}" tabindex="-1">Previous</a>
             </li>
             <li th:class=" 'page-item ' + ${result.page == page?'active':''} " th:each="page:${result.pageList}">
-                <a class="page-link" th:href="@{/guestbook/list(page=${page})}">[[${page}]]</a>
+                <a class="page-link" th:href="@{/guestbook/list(page=${page})},type=${pageRequestDTO.type},keyword=${pageRequestDTO.keyword}">[[${page}]]</a>
             </li>
             <li class="page-item " th:if="${result.next}">
                 <a class="page-link" th:href="@{/guestbook/list(page=${result.end+1})}">Next</a>
@@ -80,6 +100,33 @@
                     myModal.show()
                 }
             }
+                var searchFrm=document.querySelector("#srchFrm");
+                var btnSearch=document.querySelector(".btn-search");
+                var btnClear=document.querySelector(".btn-clear");
+                var selType=document.querySelector("#srchFrm select[name='type']");
+                var txtKeyword=document.querySelector("#srchFrm input[name='keyword']");
+
+                btnSearch.onclick=()=>{
+                    searchFrm.submit();
+                }
+
+                btnClear.onclick=()=>{
+                    selType.options[0].selected=true;
+                    txtKeyword.value="";
+                    txtKeyword.disabled=true;
+                    searchFrm.submit();
+
+                }
+                selType.onchange=()=>{
+                    if(selType.options[0].selected==true){
+                        txtKeyword.disabled=true;
+                        txtKeyword.value='';
+                    }else{
+                        txtKeyword.disabled=false;
+                    }
+                }
+                const requestKeyword=/*[[${pageRequestDTO.keyword}]]*/'keyword';
+                txtKeyword.disabled=requestKeyword==null?true:(requestKeyword.trim()=="")?true:false;
         </script>
     </th:block>
 </th:block>

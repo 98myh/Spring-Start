@@ -82,7 +82,4 @@ public class GuestbookController {
 		return "redirect:/guestbook/list";
 	}
 
-
-
-
 }
