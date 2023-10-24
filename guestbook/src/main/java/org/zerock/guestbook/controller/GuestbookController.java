@@ -64,6 +64,8 @@ public class GuestbookController {
 		service.modify(dto);
 		ra.addAttribute("gno",dto.getGno());
 		ra.addAttribute("page",pageRequestDTO.getPage());
+		ra.addAttribute("type",pageRequestDTO.getType());
+		ra.addAttribute("keyword",pageRequestDTO.getKeyword());
 		ra.addFlashAttribute("msg",dto.getGno()+" 수정");
 		return "redirect:/guestbook/read";
 	}
@@ -78,6 +80,8 @@ public class GuestbookController {
 		}else{
 			ra.addAttribute("page",pageRequestDTO.getPage());
 		}
+		ra.addAttribute("type",pageRequestDTO.getType());
+		ra.addAttribute("keyword",pageRequestDTO.getKeyword());
 		ra.addFlashAttribute("msg",gno+" 삭제");
 		return "redirect:/guestbook/list";
 	}

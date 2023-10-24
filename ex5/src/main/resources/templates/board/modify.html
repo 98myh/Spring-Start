@@ -5,11 +5,11 @@
         <style>
             .form-group{margin:15px 0;}
         </style>
-        <h1>GuestBook Modify Page</h1>
-        <form th:action="@{/guestbook/modify}" th:method="post">
+        <h1>Board Modify Page</h1>
+        <form th:action="@{/board/modify}" th:method="post">
             <div class="form-group">
                 <label>Gno</label>
-                <input type="text" th:value="${dto.gno}" name="gno" class="form-control" readonly/>
+                <input type="text" th:value="${dto.bno}" name="bno" class="form-control" readonly/>
                 <input type="hidden" name="page" th:value="${requestDTO.page}" />
                 <input type="hidden" name="type" th:value="${requestDTO.type}" />
                 <input type="hidden" name="keyword" th:value="${requestDTO.keyword}" />
@@ -46,15 +46,15 @@
             const removeBtn=document.querySelector(".removeBtn");
 
             modiBtn.onclick=e=>{
-                actionForm.setAttribute('action',/*@{/guestbook/modify}*/'modify');
+                actionForm.setAttribute('action',/*@{/board/modify}*/'modify');
                 actionForm.setAttribute('method','post');
                 actionForm.submit();
             }
             listBtn.onclick=e=>{
-                location.href=/*[[@{/guestbook/list(page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}]]*/'url';
+                location.href=/*[[@{/board/list(page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}]]*/'url';
             }
             removeBtn.onclick=e=>{
-                actionForm.setAttribute('action',/*@{/guestbook/remove}*/'remove');
+                actionForm.setAttribute('action',/*@{/board/remove}*/'remove');
                 actionForm.setAttribute('method','post');
                 actionForm.submit();
             }

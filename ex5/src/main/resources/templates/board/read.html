@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{/layout/basic :: setContent(~{this:: content})}">
+    <th:block th:fragment="content">
+        <style>
+            .form-group{margin:15px 0;}
+
+        </style>
+        <h1>GuestBook Read Page</h1>
+        <div class="form-group">
+            <label>Bno</label>
+            <input type="text" th:value="${dto.bno}" name="bno" class="form-control" readonly/>
+        </div>
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" th:value="${dto.title}" name="title" class="form-control" readonly/>
+        </div>
+        <div class="form-group">
+            <label>Content</label>
+            <textarea name="content" rows="5" class="form-control" readonly>[[${dto.content}]]</textarea>
+        </div>
+        <div class="form-group">
+            <label>Writer</label>
+            <input type="text" th:value="${dto.writer}" name="writer" class="form-control" readonly/>
+        </div>
+        <div class="form-group">
+            <label>RegDate</label>
+            <input type="text" th:value="${#temporals.format(dto.regDate,'yyyy/MM/dd HH:mm:ss')}" name="regDate"
+                   class="form-control" readonly/>
+        </div>
+        <div class="form-group">
+            <label>ModDate</label>
+            <input type="text" th:value="${#temporals.format(dto.modDate,'yyyy/MM/dd HH:mm:ss')}" name="modDate"
+                   class="form-control" readonly/>
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a th:href="@{/board/modify(bno=${dto.bno},page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}" class="btn btn-primary">Modify</a>
+        <a th:href="@{/board/list(page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}" class="btn btn-info">List</a>
+        <script th:inline="javascript">
+            window.onload = function () {
+                var msg = /*[[${msg}]]*/'msg';
+                if (msg === '' || history.state) {
+                    return
+                }
+                history.replaceState({}, null, null);
+
+                if (msg) {
+                    const bno = msg.split(" ")[0];
+                    const noti = msg.split(" ")[1];
+
+                    const myModal = new bootstrap.Modal(document.getElementById('myModal'), {backdrop: true});
+                    document.querySelector(".modal-title").textContent = noti + ' 완료';
+                    document.querySelector(".modal-body").innerHTML = `<p>${bno}번 글이 ${noti} 되었습니다.</p>`;
+                    myModal.show()
+                }
+            }
+        </script>
+    </th:block>
+</th:block>

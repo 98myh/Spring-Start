@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{/layout/basic :: setContent(~{this:: content})}">
+  <th:block th:fragment="content">
+    <h1>GuestBook Register Page</h1>
+    <form th:action="@{/board/register}" th:method="post">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" placeholder="Enter Title" class="form-control"/>
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea name="content" rows="5" class="form-control"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Writer</label>
+        <input type="text" name="writer" placeholder="Enter Writer" class="form-control"/>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <div class="modal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Modal title</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </th:block>
+</th:block>

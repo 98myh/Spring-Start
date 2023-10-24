@@ -1,4 +1,4 @@
-package org.zerock.ex4.entity;
+package org.zerock.ex5.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
