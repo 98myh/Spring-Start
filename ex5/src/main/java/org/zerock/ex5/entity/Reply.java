@@ -14,7 +14,7 @@ public class Reply extends BaseEntity{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long rno;
 	private String text;
-	private String reply;
+	private String replyer;
 
 	//연관된 테이블 지정(1:다 관계)
 	@ManyToOne(fetch = FetchType.LAZY)
