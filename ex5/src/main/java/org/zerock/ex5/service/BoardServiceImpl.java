@@ -12,6 +12,7 @@ import org.zerock.ex5.dto.PageResultDTO;
 import org.zerock.ex5.entity.Board;
 import org.zerock.ex5.entity.Member;
 import org.zerock.ex5.repository.BoardRepository;
+import org.zerock.ex5.repository.MemberRepository;
 import org.zerock.ex5.repository.ReplyRepository;
 
 import java.util.Optional;
@@ -23,10 +24,17 @@ import java.util.function.Function;
 public class BoardServiceImpl implements BoardService{
 	private final BoardRepository boardRepository; //순환참조 막기위해 final
 	private final ReplyRepository replyRepository;
+	private final MemberRepository memberRepository;
 	@Override
+	@Transactional
 	public Long register(BoardDTO dto) {
 		Board board=dtoToEntity(dto);
-		boardRepository.save(board);
+
+		if(memberRepository.findById(dto.getWriterEmail()).isEmpty()){
+			return -1L;
+		}else {
+			boardRepository.save(board);
+		}
 		//몇번 글이 등록됬는지 리턴
 		return board.getBno();
 	}
@@ -36,7 +44,12 @@ public class BoardServiceImpl implements BoardService{
 	public PageResultDTO<BoardDTO, Object[]> getList(PageRequestDTO pageRequestDTO) {
 		log.info(pageRequestDTO);
 		Function<Object[],BoardDTO> fn=(en->entityToDTO((Board)en[0],(Member) en[1],(Long) en[2]));
-		Page<Object[]> result=boardRepository.getBoardWithReplyCount(pageRequestDTO.getPageable(Sort.by("bno").descending()));
+//		Page<Object[]> result=boardRepository.getBoardWithReplyCount(pageRequestDTO.getPageable(Sort.by("bno").descending()));
+//		return new PageResultDTO<>(result,fn);
+		Page<Object[]> result=boardRepository.searchPage(
+				pageRequestDTO.getType(),
+				pageRequestDTO.getKeyword(),
+				pageRequestDTO.getPageable(Sort.by("bno").descending()));
 		return new PageResultDTO<>(result,fn);
 	}
 

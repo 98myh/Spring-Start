@@ -76,50 +76,47 @@
         </div>
         <script th:inline="javascript">
             function detailView(bno,page,type,keyword){
-              url = /*[[@{/board/read}]]*/'url'
-              location.href = url + '?bno='+bno+'&page='+page+'&type='+type+'&keyword='+keyword
+                url = /*[[@{/board/read}]]*/'url'
+                location.href = url + '?bno='+bno+'&page='+page+'&type='+type+'&keyword='+keyword
             }
-
             window.onload = function () {
-              if (msg === '' || history.state)  return
-              var msg = /*[[${msg}]]*/'msg';
-              console.log(msg);
-              history.replaceState({}, null, null)
-              if(msg) {
-                const arr = msg.split(" ")
-                const bno = arr[0];
-                const noti = arr[1];
-                const myModal = new bootstrap.Modal(document.getElementById('myModal'), { backdrop: true });
-                document.querySelector(".modal-title").textContent = noti + ' 완료';
-                document.querySelector(".modal-body").innerHTML = `<p>${bno}번 글이  ${noti}되었습니다.</p>`;
-                myModal.show()
-              }
-
-              var formSearch = document.querySelector("#formSearch")
-              var btnSearch = document.querySelector(".btn-search")
-              var btnClear = document.querySelector(".btn-clear")
-              var selType = document.querySelector(".custom-select")
-              var txtKeyword = document.querySelector(".custom-keyword")
-              btnSearch.onclick = () => formSearch.submit()
-              btnClear.onclick = () => {
-                selType.options[0].selected=true;
-                txtKeyword.value="";
-                txtKeyword.disabled = true;
-                formSearch.submit()
-              }
-              selType.onchange = () => {
-                if(selType.options[0].selected == true){
-                  txtKeyword.disabled = true;
-                  txtKeyword.value = '';
-                } else {
-                  txtKeyword.disabled = false;
+                if (msg === '' || history.state)  return
+                var msg = /*[[${msg}]]*/'msg';
+                console.log(msg);
+                history.replaceState({}, null, null)
+                if(msg) {
+                    const arr = msg.split(" ")
+                    const bno = arr[0];
+                    const noti = arr[1];
+                    const myModal = new bootstrap.Modal(document.getElementById('myModal'), { backdrop: true });
+                    document.querySelector(".modal-title").textContent = noti + ' 완료';
+                    document.querySelector(".modal-body").innerHTML = `<p>${bno}번 글이  ${noti}되었습니다.</p>`;
+                    myModal.show()
                 }
-              }
-              const requestKeyword = /*[[${pageRequestDTO.keyword}]]*/'keyword'
-              txtKeyword.disabled = requestKeyword==null?true:(requestKeyword.trim() == "")?true:false;
+
+                var formSearch = document.querySelector("#formSearch")
+                var btnSearch = document.querySelector(".btn-search")
+                var btnClear = document.querySelector(".btn-clear")
+                var selType = document.querySelector(".custom-select")
+                var txtKeyword = document.querySelector(".custom-keyword")
+                btnSearch.onclick = () => formSearch.submit()
+                btnClear.onclick = () => {
+                    selType.options[0].selected=true;
+                    txtKeyword.value="";
+                    txtKeyword.disabled = true;
+                    formSearch.submit()
+                }
+                selType.onchange = () => {
+                    if(selType.options[0].selected == true){
+                        txtKeyword.disabled = true;
+                        txtKeyword.value = '';
+                    } else {
+                        txtKeyword.disabled = false;
+                    }
+                }
+                const requestKeyword = /*[[${pageRequestDTO.keyword}]]*/'keyword'
+                txtKeyword.disabled = requestKeyword==null?true:(requestKeyword.trim() == "")?true:false;
             }
-
-
         </script>
     </th:block>
 </th:block>

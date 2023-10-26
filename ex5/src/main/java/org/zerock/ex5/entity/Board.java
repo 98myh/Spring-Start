@@ -16,6 +16,11 @@ public class Board extends BaseEntity{
 	private String title;
 	private String content;
 
+
+
+
+
+
 	@ManyToOne(fetch = FetchType.LAZY)//EAGER(default값) - 무조건 조인을 함 느림, LAZY - 필요할때만 조인 귀찮아지는경우가 있음
 	private Member writer;
 

@@ -8,7 +8,7 @@
         <h1>Board Modify Page</h1>
         <form th:action="@{/board/modify}" th:method="post">
             <div class="form-group">
-                <label>Gno</label>
+                <label>Bno</label>
                 <input type="text" th:value="${dto.bno}" name="bno" class="form-control" readonly/>
                 <input type="hidden" name="page" th:value="${requestDTO.page}" />
                 <input type="hidden" name="type" th:value="${requestDTO.type}" />
@@ -24,7 +24,8 @@
             </div>
             <div class="form-group">
                 <label>Writer</label>
-                <input type="text" th:value="${dto.writer}" name="writer" class="form-control" readonly/>
+                <input type="text" th:value="${dto.writerName}" name="writerName" class="form-control" readonly/>
+                <input type="text" th:value="${dto.writerEmail}" name="writerEmail" class="form-control" readonly/>
             </div>
             <div class="form-group">
                 <label>RegDate</label>
