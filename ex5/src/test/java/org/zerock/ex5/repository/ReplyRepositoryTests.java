@@ -7,6 +7,7 @@ import org.zerock.ex5.entity.Board;
 import org.zerock.ex5.entity.Member;
 import org.zerock.ex5.entity.Reply;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 @SpringBootTest
@@ -32,5 +33,15 @@ public class ReplyRepositoryTests {
 
 			replyRepository.save(reply);
 		});
+	}
+
+	@Test
+	public void testListByBoard(){
+		List<Reply> result=replyRepository.getRepliesByBoardOrderByRno(
+				Board.builder()
+						.bno(97L)
+						.build()
+		);
+		result.forEach(r-> System.out.println(r));
 	}
 }
