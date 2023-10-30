@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<style>
+    .form-group {margin-top: 15px }
+
+</style>
 <th:block th:replace="~{/layout/basic :: setContent(~{this:: content})}">
     <th:block th:fragment="content">
-        <style>
-            .form-group{margin:15px 0;}
-
-        </style>
-        <h1>GuestBook Read Page</h1>
+        <h1 class="mt-4">Board Read Page</h1>
         <div class="form-group">
             <label>Bno</label>
-            <input type="text" th:value="${dto.bno}" name="bno" class="form-control" readonly/>
+            <input type="text" name="bno" class="form-control" th:value="${dto.bno}" readonly>
         </div>
         <div class="form-group">
             <label>Title</label>
-            <input type="text" th:value="${dto.title}" name="title" class="form-control" readonly/>
+            <input type="text" name="title" class="form-control" th:value="${dto.title}" readonly></input>
         </div>
         <div class="form-group">
             <label>Content</label>
@@ -21,18 +21,35 @@
         </div>
         <div class="form-group">
             <label>Writer</label>
-            <input type="text" th:value="${dto.writerName}" name="writer" class="form-control" readonly/>
+            <input type="text" name="writer" class="form-control" th:value="${dto.writerName}" readonly>
         </div>
         <div class="form-group">
             <label>RegDate</label>
-            <input type="text" th:value="${#temporals.format(dto.regDate,'yyyy/MM/dd HH:mm:ss')}" name="regDate"
-                   class="form-control" readonly/>
+            <input type="text" name="regDate" class="form-control"
+                   th:value="${#temporals.format(dto.regDate, 'yyyy/MM/dd HH:mm:ss')}" readonly>
         </div>
         <div class="form-group">
             <label>ModDate</label>
-            <input type="text" th:value="${#temporals.format(dto.modDate,'yyyy/MM/dd HH:mm:ss')}" name="modDate"
-                   class="form-control" readonly/>
+            <input type="text" name="modDate" class="form-control"
+                   th:value="${#temporals.format(dto.modDate, 'yyyy/MM/dd HH:mm:ss')}" readonly>
         </div>
+        <div class="form-group">
+            <a th:href="@{/board/modify(bno=${dto.bno}, page=${requestDTO.page}, type=${requestDTO.type}, keyword=${requestDTO.keyword})}">
+                <button type="button" class="btn btn-primary">Modify</button>
+            </a>
+            <a th:href="@{/board/list(page=${requestDTO.page}, type=${requestDTO.type}, keyword=${requestDTO.keyword})}">
+                <button type="button" class="btn btn-info">List</button>
+            </a>
+            <div>
+                <div class="mt-4">
+                    <h5><span class="btn btn-outline-primary addReply">Add Reply [[${dto.replyCount}]]</span></h5>
+                </div>
+                <div class="list-group replyList" style="margin-bottom:50px;">
+
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -43,17 +60,17 @@
                     <div class="modal-body">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                        <button type="button" class="btn btn-danger remove" >Remove</button>
+                        <button type="button" class="btn btn-warning modify" >Modify</button>
+                        <button type="button" class="btn btn-primary save" >Save</button>
+                        <button type="button" class="btn btn-secondary">Close</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <a th:href="@{/board/modify(bno=${dto.bno},page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}" class="btn btn-primary">Modify</a>
-        <a th:href="@{/board/list(page=${requestDTO.page},type=${requestDTO.type},keyword=${requestDTO.keyword})}" class="btn btn-info">List</a>
         <script th:inline="javascript">
             window.onload = function () {
+                const bno=[[${dto.bno}]]
                 var msg = /*[[${msg}]]*/'msg';
                 if (msg === '' || history.state) {
                     return
@@ -64,12 +81,183 @@
                     const bno = msg.split(" ")[0];
                     const noti = msg.split(" ")[1];
 
+                    console.log(msg);
                     const myModal = new bootstrap.Modal(document.getElementById('myModal'), {backdrop: true});
                     document.querySelector(".modal-title").textContent = noti + ' 완료';
                     document.querySelector(".modal-body").innerHTML = `<p>${bno}번 글이 ${noti} 되었습니다.</p>`;
                     myModal.show()
                 }
+                var myModal=new bootstrap.Modal(document.querySelector('#myModal'),{backdrop:false});
+
+                var listGroup = document.querySelector(".replyList")
+                loadJSONData();
+
+                //document.querySelector(".replyCount").onclick = () => {
+                //  loadJSONData()
+                //}
+
+                function formatTime(str) {
+                  const date = new Date(str)
+                  return `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} `
+                          + ` ${date.getHours()}:${date.getMinutes()}`
+                }
+                function loadJSONData() {
+                  let bno = [[${dto.bno}]]
+                  const url = /*[[@{/replies/board/}]]*/'url'
+                  fetch(url+bno, {method: 'GET',})
+                  .then(response => {return response.json();})
+                  .then(data => {
+                    // console.log(data);
+                    let str = "";
+                    for(i=0; i<data.length; i++) {
+                      str += `<div class="card-body form-control" data-rno="${data[i].rno}" data-text="${data[i].text}"
+                            data-replyer="${data[i].replyer}" style="cursor:pointer;">
+                            <b>${data[i].rno}</b>
+                            <h5 class="card-title">${data[i].text}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">${data[i].replyer}</h6>
+                            <p class="card-text">${formatTime(data[i].regDate)}</p>
+                            </div>`
+                    }
+                    listGroup.innerHTML = str
+                    const cardBodys=document.querySelectorAll(".card-body");
+                    for(let i=0;i<cardBodys.length;i++){
+                        cardBodys[i].onclick=()=>{
+                            const rno=cardBodys[i].dataset.rno;
+                            const text=cardBodys[i].dataset.text;
+                            const replyer=cardBodys[i].dataset.replyer;
+
+                            document.querySelector("#exampleModalLabel").textContent='댓글 수정하기';
+
+                            document.querySelector(".modal-body").innerHTML=
+                                `<div class="modal-body">
+                                    <b>댓글번호: ${rno}</b>
+                                    <input type="hidden" class="form-control" name="rno" value="${rno}"/>
+                                    <input type="text" class="form-control" name="replyText" value="${text}"/>
+                                    <input type="text" class="form-control" name="replyer" value="${replyer}"/>
+                                 </div>`
+
+                            showButton('Modify','Remove','Close');
+                            myModal.show();
+                            }
+                            cardBodys[i].onmouseover=function(){
+                                this.style.background="#eee"
+                            }
+                            cardBodys[i].onmouseout=function(){
+                                this.style.background="#FFF"
+                            }
+                    }
+                  });
+                }
+                document.querySelector(".addReply").onclick=()=>{
+                    document.querySelector("#exampleModalLabel").textContent='댓글 추가하기';
+
+                    document.querySelector(".modal-body").innerHTML=
+                        `<div class="modal-body">
+                            <input type="text" class="form-control" name="replyText" placeholder="Reply..."/>
+                            <input type="text" class="form-control" name="replyer" placeholder="Replyer..."/>
+                         </div>`
+                         showButton('Save','Close');
+                         myModal.show();
+                }
+
+                function showButton(...arr){
+                    const btns=document.querySelectorAll(".modal-footer .btn")
+                    for(let i=0;i<btns.length;i++){
+                        for(let j=0;j<arr.length;j++){
+                            if(arr[j]==btns[i].textContent){
+                                btns[i].style.display='inline';break;
+                            }else{
+                                btns[i].style.display='none';
+                            }
+                        }
+                    }
+                }
+                document.querySelector(".modal-footer .save").onclick=()=>{
+                    const text=document.querySelector("input[name='replyText']")
+                    const replyer=document.querySelector("input[name='replyer']")
+
+                    if(text.value==""){
+                        text.setAttribute('placeholder','댓글을 입력하세요'); return
+                    }
+                    if(replyer.value==""){
+                        replyer.setAttribute('placeholder','작성자를 입력하세요'); return
+                    }
+                    const reply={
+                        bno:bno,
+                        text:text.value,
+                        replyer:replyer.value
+                    }
+                    const url=/*[[@{/replies}]]*/'url'
+                    fetch(url,{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify(reply)
+                    })
+                        .then(res=>res.json())
+                        .then(async function(data){
+                            myModal.hide();
+                            alert(data+"번 댓글이 등록되었습니다.")
+                            loadJSONData();
+                        })
+                        .catch(e=>{console.log('myError ',e)})
+
+                }
+
+                //수정하기
+                document.querySelector(".modal-footer .modify").onclick=()=>{
+                    const rno=document.querySelector("input[name='rno']").value
+                    const text=document.querySelector("input[name='replyText']")
+                    const replyer=document.querySelector("input[name='replyer']")
+
+                    if(text.value==""){
+                        text.setAttribute('placeholder','댓글을 입력하세요'); return
+                    }
+                    if(replyer.value==""){
+                        replyer.setAttribute('placeholder','작성자를 입력하세요'); return
+                    }
+                    const reply={
+                        rno:rno,
+                        bno:bno,
+                        text:text.value,
+                        replyer:replyer.value
+                    }
+                    const url=/*[[@{/replies/}]]*/'url'
+                    fetch(url+rno,{
+                        method:'PUT',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify(reply)
+                    })
+                        .then(res=>res.json())
+                        .then(async function(data){
+                            myModal.hide();
+                            alert(data+"번 댓글이 수정되었습니다.")
+                            loadJSONData();
+                        })
+                        .catch(e=>{console.log('myError ',e)})
+
+                }
+
+                //삭제하기
+                document.querySelector(".modal-footer .remove").onclick=()=>{
+                    const rno=document.querySelector("input[name='rno']").value
+
+                    const url=/*[[@{/replies/}]]*/'url'
+                    fetch(url+rno,{
+                        method:'DELETE',
+                        headers:{'Content-Type':'application/json'},
+                    })
+                        .then(res=>res.json())
+                        .then(async function(data){
+                            myModal.hide();
+                            alert(data+"번 댓글이 삭제되었습니다.")
+                            loadJSONData();
+                        })
+                        .catch(e=>{console.log('myError ',e)})
+
+                }
             }
-        </script>
+
+    </script>
     </th:block>
 </th:block>
+</html>

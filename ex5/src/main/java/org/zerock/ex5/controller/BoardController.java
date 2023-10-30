@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.ex5.dto.BoardDTO;
 import org.zerock.ex5.dto.PageRequestDTO;
-import org.zerock.ex5.entity.Board;
 import org.zerock.ex5.service.BoardService;
 
 @Controller
@@ -81,7 +80,7 @@ public class BoardController {
 
 		ra.addAttribute("type",pageRequestDTO.getType());
 		ra.addAttribute("keyword",pageRequestDTO.getKeyword());
-		ra.addFlashAttribute("msg",bno+" 삭제");
+		ra.addFlashAttribute("msg",bno);
 		return "redirect:/board/list";
 	}
 

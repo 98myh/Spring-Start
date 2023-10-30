@@ -12,13 +12,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ReplyServiceImpl implements ReplyService{
+public class ReplyServiceImpl implements ReplyService {
 	private final ReplyRepository replyRepository;
 
 	@Override
-	public Long register(ReplyDTO replyDto) {
-
-		Reply reply=dtoToEntity(replyDto);
+	public Long register(ReplyDTO replyDTO) {
+		Reply reply = dtoToEntity(replyDTO);
 		replyRepository.save(reply);
 		//몇번이 등록됬는지 반환
 		return reply.getRno();
@@ -26,20 +25,16 @@ public class ReplyServiceImpl implements ReplyService{
 
 	@Override
 	public List<ReplyDTO> getList(Long bno) {
-		List<Reply> result=replyRepository.getRepliesByBoardOrderByRno(
-				Board.builder()
-						.bno(bno)
-						.build()
+		List<Reply> result = replyRepository.getRepliesByBoardOrderByRno(
+				Board.builder().bno(bno).build()
 		);
-		result.stream().map(reply -> entityToDto(reply)).collect(Collectors.toList());
-		return null;
+		return result.stream().map(reply -> entityToDto(reply)).collect(Collectors.toList());
 	}
 
 	@Override
 	public void modify(ReplyDTO replyDTO) {
-		Reply reply=dtoToEntity(replyDTO);
+		Reply reply = dtoToEntity(replyDTO);
 		replyRepository.save(reply);
-
 	}
 
 	@Override
