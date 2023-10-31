@@ -11,14 +11,14 @@ import org.zerock.ex5.service.ReplyService;
 
 import java.util.List;
 
-@RestController
+@RestController //Rest API -HTML을 불러내는게 아니라 데이터를 요청
 @RequestMapping("/replies")
 @Log4j2
 @RequiredArgsConstructor
 public class ReplyController {
 	private final ReplyService replyService;
 
-	@GetMapping(value = "/board/{bno}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/board/{bno}", produces = MediaType.APPLICATION_JSON_VALUE )
 	public ResponseEntity<List<ReplyDTO>> getListByBoard(@PathVariable("bno") Long bno) {
 		log.info("replies/board/bno: "+bno);
 		return new ResponseEntity<>(replyService.getList(bno), HttpStatus.OK);
