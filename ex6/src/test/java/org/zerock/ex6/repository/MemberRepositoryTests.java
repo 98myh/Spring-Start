@@ -3,6 +3,7 @@ package org.zerock.ex6.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import org.zerock.ex6.entity.Member;
 
 import java.util.stream.IntStream;
@@ -14,6 +15,8 @@ class MemberRepositoryTests {
 
 	@Autowired
 	MemberRepository memberRepository;
+	@Autowired
+	ReviewRepository reviewRepository;
 
 	@Test
 	public void insertMembers(){
@@ -25,5 +28,16 @@ class MemberRepositoryTests {
 					.build();
 			memberRepository.save(member);
 		});
+	}
+
+	@Test
+	@Transactional
+	public void testDeleteMember(){
+		Long mid=1L;
+		Member member=Member.builder()
+				.mid(mid)
+				.build();
+		reviewRepository.deleteByMember(member);
+		memberRepository.deleteById(member.getMid());
 	}
 }

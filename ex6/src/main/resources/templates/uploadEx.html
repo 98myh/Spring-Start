@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>UploadEx</title>
+</head>
+<body>
+<input name="uploadFiles" type="file" multiple />
+<button class="uploadBtn">Upload</button>
+
+<script src="http://unpkg.com/axios/dist/axios.min.js"></script>
+<script th:inline="javascript">
+        document.querySelector(".uploadBtn").onclick=function(){
+            var formData=new FormData();
+            const inputFile=document.querySelector("input[type='file']");
+            var files=inputFile.files
+            for(let i=0;i<files.length;i++){
+                console.log(files[i]);
+                formData.append("uploadFiles",files[i]);
+            }
+            const url=/*[[@{/uploadAjax}]]*/'url'
+
+            fetch(url,{
+                method:'POST',
+                body:formData,
+                dataType:'json'
+            })
+            .then(res=>console.log(res))
+            .catch(e=>{console.log("Error occured: ",e)})
+
+
+            /*axios.post(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Access-Control-Allow-Origin':"*",
+                'process-data':false,
+                'content-type':false,
+                }
+            })
+            .then(response => {
+                console.log(response);
+            })
+            .catch(error => {
+                console.error("Error occurred: ", error);
+            });*/
+        }
+    </script>
+</body>
+</html>
