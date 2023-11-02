@@ -12,7 +12,7 @@ public interface MovieRepository extends JpaRepository<Movie,Long> {
 	//coalesce == 오라클에서 NVL과 같은 첫 인자가 NULL이면 두번째 인자 출력
 //	@Query("select m,avg(coalesce(r.grade,0)),count(distinct r) from Movie m left outer join Review r on r.movie=m group by m")
 
-	//mi로 인해서 가장 먼저 입력도니 MovieImage가 출력됨
+	//mi로 인해서 가장 먼저 입력된 MovieImage가 출력됨
 //	@Query("select m,mi,avg(coalesce(r.grade,0)),count(distinct r) "+
 //			" from Movie m "+
 //			" left outer join MovieImage mi on mi.movie=m "+

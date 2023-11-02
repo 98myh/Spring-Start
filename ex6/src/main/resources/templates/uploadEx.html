@@ -7,9 +7,45 @@
 <body>
 <input name="uploadFiles" type="file" multiple />
 <button class="uploadBtn">Upload</button>
+<div class="uploadResult"></div>
 
 <script src="http://unpkg.com/axios/dist/axios.min.js"></script>
 <script th:inline="javascript">
+        function showUploadedImages(arr){
+            console.log(arr);
+            var divArea=document.querySelector(".uploadResult");
+            const url=/*[[@{/display}]]*/'url'
+            let str="";
+            for(let i=0;i<arr.length;i++){
+            //arr[i].imageURL을 사용하면 내부적으로는 arr[i].getImageURL() 메서드를 호출하게 되는 것
+                //str+=`<div><img src="${url}?fileName=${arr[i].imageURL}" /></div>`
+                str+=`<div><img src="${url}?fileName=${arr[i].thumbnailURL}" /><button class="removeBtn" data-name='${arr[i].imageURL}'>X</button></div>`
+            }
+            divArea.innerHTML=str;
+
+            //삭제 버튼 클릭 이벤트
+            const removeBtns=document.querySelectorAll(".removeBtn");
+            for(let i=0;i<removeBtns.length;i++){
+                removeBtns[i].onclick=function(){
+                    const fileName=this.dataset.name;
+                    const targetDiv=this.closest('div');
+                    const removeUrl=/*[[@{/removeFile?fileName=}]]*/'removeUrl';
+                    fetch(removeUrl+fileName,{
+                        method:'POST',
+                        fileName:fileName
+                    })
+                    .then(res=>res.json())
+                    .then(res=>{
+                        if(res===true){
+                            targetDiv.remove();
+                        }
+                    })
+                    .catch(e=>console.log("Error : ",e));
+                }
+            }
+        }
+
+
         document.querySelector(".uploadBtn").onclick=function(){
             var formData=new FormData();
             const inputFile=document.querySelector("input[type='file']");
@@ -25,8 +61,13 @@
                 body:formData,
                 dataType:'json'
             })
-            .then(res=>console.log(res))
+            .then(res=>res.json())
+            .then(res=>{console.log(res);
+                        showUploadedImages(res);
+                        }
+                 )
             .catch(e=>{console.log("Error occured: ",e)})
+
 
 
             /*axios.post(url, formData, {
