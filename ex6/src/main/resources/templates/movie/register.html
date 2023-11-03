@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{/layout/basic :: setContent(~{this:: content})}">
+    <th:block th:fragment="content">
+        <style>
+      .form-group { margin-bottom: 30px; }
+      .uploadResult {width:100%;background:gray;margin-top:10px;}
+      .uploadResult ul {
+          display:flex;flex-flow:row;justify-content:center;
+          align-items:center;vertical-align:top;overflow:auto;
+      }
+      .uploadResult ul li{list-style:none;padding:10px;margin-left:2em;}
+      .uploadResult ul li img{width:100px;}
+
+    </style>
+        <h1 class="mt-4">Movie Register Page</h1>
+        <form th:action="@{/movie/register}" th:method="post">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" placeholder="Enter Title" class="form-control">
+            </div>
+            <div class="form-group fileForm">
+                <label>Image Files</label>
+                <div class="custom-file">
+                    <input id="fileInput" type="file" class="custom-file-input form-control files" multiple>
+                    <label class="custom-file-label" data-browse="Browse"></label>
+                </div>
+            </div>
+            <!-- file의 onchange이벤트 후에 submit로 보낼 이미지 정보가 들어있는 부분 -->
+            <div class="box"></div>
+            <button type="submit" class="btn btn-primary btnRegist">Submit</button>
+        </form>
+        <!-- file의 onchange이벤트 후에 섬네일이 나타날 부분 -->
+        <div class="uploadResult">
+            <ul></ul>
+        </div>
+        <script th:inline="javascript">
+      window.onload = function () {
+        const maxSize = 1024*1024*10;
+        const fileInput = document.querySelector("#fileInput");
+
+        function checkExtension(fileName, fileSize) {
+          if(fileSize > maxSize){alert("파일 사이즈 초과");return false;}
+          // const regex = new RegExp("(.*?)\.(exe|sh|zip|alz|tiff)$");
+          const regex = new RegExp("(.*?)\.(jpg|jpeg|png|gif|bmp|pdf)$",'i');
+          if(!regex.test(fileName)) {alert("해당 파일은 업로드 금지!"); return false;}
+          return true;
+        }
+
+        fileInput.onchange = function () {
+          const fileName = fileInput.value.split("\\").pop();
+          let label = document.querySelector(".custom-file-label");
+          label.innerHTML =
+            (fileInput.files.length-1) == 0 ? "" : fileName+" 외 "+(fileInput.files.length-1)+"개";
+          let formData = new FormData();
+          let files = this.files;
+          let appended = false; //파일이 추가되는지에 대한 여부
+          for (let i = 0; i < files.length; i++) {
+            if(!checkExtension(files[i].name, files[i].size)) {
+              label.innerHTML = "";
+              this.value = '';
+              return false;  //파일 체크에 대한 리턴
+            }
+            formData.append("uploadFiles", files[i]);
+            appended = true;
+          }
+          if(!appended) return;
+
+          for (const value of formData.values()) {
+            console.log(value);
+          }
+
+          const url = /*[[@{/uploadAjax}]]*/'url';
+
+          fetch(url, {
+            method: 'POST',
+            body: formData,
+            dataType: 'json',
+          })
+          .then(response => response.json()) //1)넘어온 자료 파싱
+          .then(json => {console.log(json);showResult(json);}) //2) 첫번째 자료를 가공처리 가능
+          .catch(err => console.log('Error:', err));
+        }
+
+        function showResult(arr) {
+          const uploadUL = document.querySelector(".uploadResult ul");
+          const url = /*[[@{/display}]]*/'url';
+          let str = "";
+          for (let i = 0; i < arr.length; i++) {
+            str += `<li data-name='${arr[i].fileName}' data-path='${arr[i].folderPath}'
+              data-uuid='${arr[i].uuid}' data-file='${arr[i].imageURL}'>
+              <div>
+                <button type="button" class='removeBtn'>X</button>
+                <br><img src="${url}?fileName=${arr[i].thumbnailURL}">
+              </div>
+            </li>`;
+          }
+          uploadUL.innerHTML = str;
+          const removeBtns = document.querySelectorAll(".removeBtn");
+          for (let i = 0; i < removeBtns.length; i++) {
+            removeBtns[i].onclick = function(){
+              const removeUrl = /*[[@{/removeFile?fileName=}]]*/'removeUrl';
+              const targetLi = this.parentElement.closest('li');
+              const fileName = targetLi.dataset.file;
+              console.log(fileName);
+              // axios({
+              //   method: "POST",
+              //   url: removeUrl+fileName,
+              // }).then(res => {
+              //   if(res.data === true) targetLi.remove();
+              // }).catch(err => {
+              //   console.log(err);
+              // });
+              fetch(removeUrl+fileName, {
+                method: 'POST',
+                dataType: 'json',
+              })
+              .then(response => response.json())
+              .then(json => {console.log(json);if(json === true) targetLi.remove();})
+              .catch(err => console.log('Error:', err));
+            }
+          }
+        }
+        document.querySelector(".btnRegist").onclick = e => {
+          e.preventDefault();
+          const title = document.querySelector("input[name='title']");
+          if(title.value == "") {title.setAttribute("placeholder", "타이틀을 입력하세요"); return;}
+          let str = "";
+          const liArr = document.querySelectorAll(".uploadResult ul li");
+          for(let i=0;i<liArr.length;i++){
+            str += `
+            <input type="hidden" name="imageDTOList[${i}].imgName" value="${liArr[i].dataset.name}">
+            <input type="hidden" name="imageDTOList[${i}].path" value="${liArr[i].dataset.path}">
+            <input type="hidden" name="imageDTOList[${i}].uuid" value="${liArr[i].dataset.uuid}">
+            `;
+          }
+          document.querySelector(".box").innerHTML = str;
+          document.querySelector("form").submit();
+        }
+      }
+
+    </script>
+    </th:block>
+</th:block>
+</html>

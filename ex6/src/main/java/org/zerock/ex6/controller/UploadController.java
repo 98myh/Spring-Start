@@ -93,7 +93,7 @@ public class UploadController {
 
 
 	//삭제
-	@PostMapping("/removeFile")
+	@DeleteMapping("/removeFile")
 	public ResponseEntity<Boolean> removeFile(@RequestParam("fileName")String fileName){
 		log.info("remove file : "+fileName);
 		String srcFileName=null;
