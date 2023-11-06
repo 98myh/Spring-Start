@@ -28,7 +28,7 @@ public interface MovieRepository extends JpaRepository<Movie,Long> {
 
 
 	//평균과 평점을 추가한 getListPage
-	@Query("select m,mi,avg(coalesce(r.grade,0)),count(r) "+
+	@Query("select m,mi,avg(coalesce(r.grade,0)),count(distinct r) "+
 			"from Movie m "+
 			"left outer join MovieImage mi on mi.movie=m "+
 			"left outer join Review r on r.movie=m "+

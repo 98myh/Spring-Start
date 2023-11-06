@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.ex6.dto.MovieDTO;
+import org.zerock.ex6.dto.MovieImageDTO;
 import org.zerock.ex6.dto.PageRequestDTO;
 import org.zerock.ex6.dto.PageResultDTO;
 import org.zerock.ex6.entity.Movie;
@@ -15,6 +16,7 @@ import org.zerock.ex6.entity.MovieImage;
 import org.zerock.ex6.repository.MovieImageRepository;
 import org.zerock.ex6.repository.MovieRepository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -54,5 +56,24 @@ public class MovieServiceImpl implements MovieService{
 
 		));
 		return new PageResultDTO<>(result,fn);
+	}
+
+	@Override
+	public MovieDTO getMovie(Long mno) {
+		List<Object[]> result=movieRepository.getMovieWithAll(mno);
+		//Movie 가져오기
+		Movie movie=(Movie)result.get(0)[0];
+		List<MovieImage> movieImageDTOList=new ArrayList<>();
+
+		//Movie 이미지 가져오기
+		result.forEach(i->movieImageDTOList.add((MovieImage) i[1]));
+
+		//평균 가져오기
+		Double avg=(Double)result.get(0)[2];
+
+		//댓글 개수 가져오기4
+		Long reviewCount=(Long)result.get(0)[3];
+
+		return entitiesToDTO(movie,movieImageDTOList,avg,reviewCount);
 	}
 }

@@ -3,16 +3,16 @@
 <th:block th:replace="~{/layout/basic :: setContent(~{this:: content})}">
     <th:block th:fragment="content">
         <style>
-      .form-group { margin-bottom: 30px; }
-      .uploadResult {width:100%;background:gray;margin-top:10px;}
-      .uploadResult ul {
-          display:flex;flex-flow:row;justify-content:center;
-          align-items:center;vertical-align:top;overflow:auto;
-      }
-      .uploadResult ul li{list-style:none;padding:10px;margin-left:2em;}
-      .uploadResult ul li img{width:100px;}
+          .form-group { margin-bottom: 30px; }
+          .uploadResult {width:100%;background:gray;margin-top:10px;}
+          .uploadResult ul {
+              display:flex;flex-flow:row;justify-content:center;
+              align-items:center;vertical-align:top;overflow:auto;
+          }
+          .uploadResult ul li{list-style:none;padding:10px;margin-left:2em;}
+          .uploadResult ul li img{width:100px;}
 
-    </style>
+        </style>
         <h1 class="mt-4">Movie Register Page</h1>
         <form th:action="@{/movie/register}" th:method="post">
             <div class="form-group">
