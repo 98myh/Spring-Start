@@ -15,11 +15,11 @@ import org.zerock.ex6.entity.Movie;
 import org.zerock.ex6.entity.MovieImage;
 import org.zerock.ex6.repository.MovieImageRepository;
 import org.zerock.ex6.repository.MovieRepository;
+import org.zerock.ex6.repository.ReviewRepository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
@@ -29,6 +29,7 @@ import java.util.function.Function;
 public class MovieServiceImpl implements MovieService{
 	private final MovieRepository movieRepository;
 	private final MovieImageRepository movieImageRepository;
+	private final ReviewRepository reviewRepository;
 
 	@Transactional
 	@Override
@@ -75,5 +76,38 @@ public class MovieServiceImpl implements MovieService{
 		Long reviewCount=(Long)result.get(0)[3];
 
 		return entitiesToDTO(movie,movieImageDTOList,avg,reviewCount);
+	}
+
+	@Override
+	public void modify(MovieDTO dto) {
+		Optional<Movie> result = movieRepository.findById(dto.getMno());
+		if (result.isPresent()) {
+			Movie movie = result.get();
+			movie.changeTitle(dto.getTitle());
+			movieRepository.save(movie);
+		}
+	}
+
+	@Transactional
+	@Override
+	public List<String> removeWithReviewsAndMovieImages(Long mno) {
+		List<MovieImage> list = movieImageRepository.findByMno(mno);
+		List<String> result = new ArrayList<>();
+		list.forEach(new Consumer<MovieImage>() {
+			@Override
+			public void accept(MovieImage t) {
+				result.add(t.getPath() + File.separator + t.getUuid() + "_" + t.getImgName());
+			}
+		});
+		movieImageRepository.deleteByMno(mno);
+		reviewRepository.deleteByMno(mno);
+		movieRepository.deleteById(mno);
+		return result;
+	}
+
+	@Override
+	public void removeUuid(String uuid) {
+		log.info("deleteImage...... uuid: " + uuid);
+		movieImageRepository.deleteByUuid(uuid);
 	}
 }

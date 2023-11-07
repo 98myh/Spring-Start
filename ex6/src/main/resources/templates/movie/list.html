@@ -20,7 +20,7 @@
                         <option value="tcw" th:selected="${pageRequestDTO.type == 'tcw'}">제목+내용+작성자</option>
                     </select>
                 </div>
-                <input type="text" name="keyword" class="form-control" th:value="${pageRequestDTO.keyword}">
+                <input type="text" name="keyword" class="form-control custom-keyword" th:value="${pageRequestDTO.keyword}">
                 <div class="input-group-append" id="button-addon4">
                     <button class="btn btn-outline-primary btn-search" type="button">Search</button>
                     <button class="btn btn-outline-secondary btn-clear" type="button">Clear</button>

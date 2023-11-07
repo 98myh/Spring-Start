@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.zerock.ex6.entity.Member;
 import org.zerock.ex6.entity.Movie;
 import org.zerock.ex6.entity.Review;
@@ -20,5 +21,9 @@ public interface ReviewRepository extends JpaRepository<Review,Long> {
 	@Modifying
 	@Query("delete from Review mr where mr.member=:member")
 	void deleteByMember(Member member);
+
+	@Modifying //update, deltet할 때 항상 표기
+	@Query("delete from Review r where r.movie.mno=:mno")
+	void deleteByMno(@Param("mno") Long mno);
 
 }

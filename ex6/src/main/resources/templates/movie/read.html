@@ -27,8 +27,8 @@
         </div>
         <div class="uploadResult">
             <ul>
-                <li th:each="movieImage: ${dto.imageDTOList}">
-                    <img th:if="${movieImage.path!=null}" th:src="|@{/display(fileName=${movieImage.getThumbnailURL()})}|">
+                <li th:each="movieImage: ${dto.imageDTOList}" th:data-file="${movieImage.getThumbnailURL}" style="cursor:pointer;">
+                    <img th:if="${movieImage.path!=null}" th:src="|@{/display(fileName=${movieImage.getThumbnailURL})}|">
                 </li>
             </ul>
         </div>
@@ -82,22 +82,6 @@
             window.onload = function () {
                 const mno = [[${dto.mno}]]
                 var msg = /*[[${msg}]]*/'msg';
-                if (msg === '' || history.state) {
-                    return
-                }
-                history.replaceState({}, null, null);
-
-                if (msg) {
-                    let mno = msg.split(" ")[0];
-                    const noti = msg.split(" ")[1];
-
-                    console.log(msg);
-                    const myModal = new bootstrap.Modal(document.getElementById('myModal'), {backdrop: true});
-                    document.querySelector(".modal-title").textContent = noti + ' 완료';
-                    document.querySelector(".modal-body").innerHTML = `<p>${mno}번 글이 ${noti} 되었습니다.</p>`;
-                    showButton("Close")
-                    myModal.show()
-                }
 
                 var myModal = new bootstrap.Modal(document.querySelector('#myModal'), {backdrop:false});
                 var listGroup = document.querySelector(".reviewList")
@@ -109,6 +93,7 @@
                 }
                 function loadJSONData() {
                   const mno = [[${dto.mno}]]
+                  console.log(">>>"+mno)
                   const url = /*[[@{/reviews/}]]*/'url'
                   fetch(url+mno+"/all", {method: 'GET',})
                   .then(response => {return response.json();})
@@ -140,7 +125,7 @@
                         document.querySelector(".modal-body").innerHTML =
                           `<div class="modal-body">
                             <b>Review No.${reviewnum}</b>
-                            <input type="text" class="form-control" name="nickname" value="${nickname}">
+                            <input type="text" class="form-control" name="nickname" value="${nickname}" readonly>
                             <input type="hidden" name="reviewnum" value="${reviewnum}">
                             <input type="hidden" name="mid" value="${mid}">
                             <label>Grade</label><span class="star">★★★★★<span>★★★★★</span>
@@ -172,6 +157,18 @@
                   showButton('Save', 'Close')
                   myModal.show();
                 }
+                const uploadResultLis = document.querySelectorAll(".uploadResult li")
+                for(const li of uploadResultLis) {
+                  li.onclick = function() {
+                    const url = /*[[@{/display}]]*/'url'
+                    const file = this.dataset.file;
+                    document.querySelector("#exampleModalLabel").textContent = 'Movie Poster'
+                    document.querySelector(".modal-body").innerHTML =
+                      `<img style="width:100%" src="${url}?fileName=${file}&size=1">`
+                    showButton("Close")
+                    myModal.show()
+                  }
+                }
                 function showButton(...arr) {
                   const btns = document.querySelectorAll(".modal-footer .btn")
                   for(let i=0;i<btns.length;i++) {
@@ -197,7 +194,7 @@
                   const mid = document.querySelector(".modal-body input[name='mid']");
                   const replyer = document.querySelector("input[name='replyer']");
 
-                  if(mid.value == "") {mid.setAttribute('placeholder', '리뷰를 입력하세요'); return;}
+                  if(mid.value == "") {mid.setAttribute('placeholder', '댓글을 입력하세요'); return;}
                   //if(grade < 1) {text.setAttribute('placeholder', '별점을 넣어주세요'); return;}
                   if(text.value == "") {replyer.setAttribute('placeholder', 'Review를 입력하세요'); return;}
                   const review = {
@@ -226,7 +223,7 @@
                   const grade = parseFloat(document.querySelector(".star span").style.width) * 0.01 * 5;
                   const text = document.querySelector(".modal-body input[name='text']");
                   const mid = document.querySelector(".modal-body input[name='mid']");
-                  if(mid.value == "") {mid.setAttribute('placeholder', '리뷰를 입력하세요'); return;}
+                  if(mid.value == "") {mid.setAttribute('placeholder', '댓글을 입력하세요'); return;}
                   //if(grade < 1) {text.setAttribute('placeholder', '별점을 넣어주세요'); return;}
                   if(text.value == "") {replyer.setAttribute('placeholder', 'Review를 입력하세요'); return;}
                   const review = {
@@ -245,7 +242,7 @@
                   .then(res => res.json())
                   .then(async function(data){
                     myModal.hide();
-                    alert(data+"번 리뷰가 수정되었습니다")
+                    alert(data+"번 댓글이 수정되었습니다")
                     loadJSONData();
                   })
                   .catch(err => console.log('myError', err))
@@ -260,17 +257,28 @@
                   .then(res => res.json())
                   .then(async function(data){
                     myModal.hide();
-                    alert(data+"번 리뷰가 삭제되었습니다")
+                    alert(data+"번 댓글이 삭제되었습니다")
                     loadJSONData();
                     countReply(-1)
                   })
                   .catch(err => console.log('myError', err))
                 }
+
+                // 등록 완료 모달 창 한번만 뜨게 하는 설정
+                if (msg === '' || history.state) return
+                history.replaceState({}, null, null);
+                if (msg) {
+                    let mno = msg.split(" ")[0];
+                    const noti = msg.split(" ")[1];
+                    console.log(msg);
+                    const myModal = new bootstrap.Modal(document.getElementById('myModal'), {backdrop: true});
+                    document.querySelector(".modal-title").textContent = noti + ' 완료';
+                    document.querySelector(".modal-body").innerHTML = `<p>${mno}번 글이 ${noti} 되었습니다.</p>`;
+                    showButton("Close")
+                    myModal.show()
+                }
             }
-
-
     </script>
-
     </th:block>
 </th:block>
 </html>

@@ -19,6 +19,11 @@ public interface MovieService {
 	PageResultDTO<MovieDTO,Object[]> getList(PageRequestDTO pageRequestDTO);
 	MovieDTO getMovie(Long mno);
 
+	void modify(MovieDTO dto);
+
+	List<String> removeWithReviewsAndMovieImages(Long mno);
+
+	void removeUuid(String uuid);
 
 	default Map<String, Object> dtoToEntity(MovieDTO movieDTO) {
 		Map<String, Object> entityMap = new HashMap<>();
