@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.ex6.dto.MovieDTO;
 import org.zerock.ex6.dto.PageRequestDTO;
+import org.zerock.ex6.entity.Movie;
 import org.zerock.ex6.service.MovieService;
 
 import java.io.File;
@@ -91,4 +92,5 @@ public class MovieController {
 		ra.addAttribute("keyword", req.getKeyword());
 		return "redirect:/movie/list";
 	}
+
 }

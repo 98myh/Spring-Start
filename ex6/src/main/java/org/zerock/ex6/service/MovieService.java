@@ -23,6 +23,7 @@ public interface MovieService {
 
 	List<String> removeWithReviewsAndMovieImages(Long mno);
 
+
 	void removeUuid(String uuid);
 
 	default Map<String, Object> dtoToEntity(MovieDTO movieDTO) {
