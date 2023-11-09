@@ -3,12 +3,10 @@ package org.zerock.ex7.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,23 +65,7 @@ public class SecurityConfig {
 		//로그인할때 로그인 페이지를 지정
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
 			httpSecurityFormLoginConfigurer.loginProcessingUrl("/user/login");  //공식적인 로그인 페이지로 접근
-
-//			httpSecurityFormLoginConfigurer.loginPage("/auth/login").defaultSuccessUrl("/");  //커스텀 로그인 페이지로 접근
 		});
-		//로그아웃할 때 로그아웃 페이지를 지정
-		httpSecurity.logout(new Customizer<LogoutConfigurer<HttpSecurity>>() {
-			@Override
-			public void customize(LogoutConfigurer<HttpSecurity> httpSecurityLogoutConfigurer) {
-				//Security 공식 로그아웃 페이지
-				httpSecurityLogoutConfigurer.logoutUrl("/logout");
-
-//				커스텀 로그아웃 페이지
-//				httpSecurityLogoutConfigurer.logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
-//						.logoutSuccessUrl("/")
-//						.invalidateHttpSession(true);
-			}
-		});
-
 		return httpSecurity.build();
 	}
 
