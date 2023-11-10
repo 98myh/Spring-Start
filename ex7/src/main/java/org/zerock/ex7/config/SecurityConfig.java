@@ -1,14 +1,18 @@
 package org.zerock.ex7.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,12 +21,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.zerock.ex7.security.handler.CustomLoginSuccessHandler;
+import org.zerock.ex7.security.service.ClubUserDetailsService;
 
 import java.util.ArrayList;
 import java.util.List;
-
-// Spring Security를 InMemory방식으로 처리 Test
 
 // extends WebSecurityConfigurerAdapter을 상속받아서 진행되었던것이 springboot security 5.7.x 부터
 // @EnableWebSecurity을 사용하고 SecurityFilterChain 관련한 @Bean으로 등록해서 사용
@@ -31,101 +35,103 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity    // @EnableGlobalMethodSecurity는 소멸됨.
 public class SecurityConfig {
+	@Autowired
+	private ClubUserDetailsService clubUserDetailsService;
+
+
 	// 액세스를 허용하는 주소들을 등록
 	private static final String[] AUTH_WHITELIST = {
-			"", "/", "/accessDenied", "/sample/all", "/sample/login", "/sample/modify",
-			"/notes/", "/notes/all", "/auth/login"
+			"/", "/accessDenied", "/sample/all", "/sample/login", "/sample/modify",
+			"/notes/",  "/notes/all", "/auth/login", "/logout"
 	};
 
-	//암호화 시키기 위한 빈
+	//비밀번호 암호화
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
-
-	// Security 설정하는 곳(*중요*)
-	// Security 5.7.x 부터는 @Bean으로 등록해서 사용(리턴 타입은 SecurityFilterChain)
+	// security 5.7.x 부터는 @Bean으로 등록해서 사용(리턴 타입은 SecurityFilterChain)
 	@Bean
 	protected SecurityFilterChain config(HttpSecurity httpSecurity) throws Exception {
-		//httpSecurity의 http로 url을 요구될때 권한에따라 매칭
-		httpSecurity.authorizeHttpRequests(auth -> {
-			auth.requestMatchers(AUTH_WHITELIST).permitAll() // Security 없이 접근 가능하도록 등록
-					.requestMatchers("/sample/admin/**").hasRole("ADMIN") //권한이 ADMIN이 있어야함
-					.requestMatchers("/sample/member/**").access(new WebExpressionAuthorizationManager(
-							"hasRole('ADMIN') or hasRole('MEMBER')")) //복수개의 권한을 등록할 때, 권한이 ADMIN과 MEMBER가 있어야함
-					.anyRequest().denyAll(); //그외는 모두 접근 금지
-		});
 
-		// 아이디와 비밀번호로 로그인할 때 인증과 권한을 부여하는 곳
-		httpSecurity.authenticationManager(
-				authenticationManager(
-						httpSecurity,
-						(BCryptPasswordEncoder) passwordEncoder(),
-						userDetailsService()
+		return httpSecurity
+				// stateless한 rest api를 개발할 것이므로 csrf 공격에 대한 옵션은 꺼둔다.
+//                .csrf(AbstractHttpConfigurer::disable)
+
+				// HttpSecurity의 http로 url을 요구할 때 권한을 설정하는 method
+				.authorizeHttpRequests((authorizeRequests) -> {
+					authorizeRequests.requestMatchers(AUTH_WHITELIST).permitAll();
+//                    authorizeRequests.requestMatchers("/sample/user/**").authenticated();
+					authorizeRequests.requestMatchers("/sample/admin/**").hasRole("ADMIN");
+
+					authorizeRequests.requestMatchers("/sample/member/**")
+							// ROLE_은 붙이면 안 된다. hasAnyRole()을 사용할 때 자동으로 ROLE_이 붙기 때문이다.
+							// hasAnyRole는 hasRole의 복수 인자 처리 형태
+							.hasAnyRole("ADMIN", "MEMBER");
+					authorizeRequests.requestMatchers("/auth/logout").authenticated();
+					authorizeRequests.anyRequest().denyAll();
+				})
+				.authenticationManager(
+						authenticationManager(
+								httpSecurity,
+								(BCryptPasswordEncoder) passwordEncoder(),
+								userDetailsService()
+						)
 				)
-		);
-		//로그인할때 로그인 페이지를 지정
-		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
-			httpSecurityFormLoginConfigurer.loginProcessingUrl("/user/login");  //공식적인 로그인 페이지로 접근
 
-//			httpSecurityFormLoginConfigurer.loginPage("/auth/login").defaultSuccessUrl("/");  //커스텀 로그인 페이지로 접근
-		});
-		//로그아웃할 때 로그아웃 페이지를 지정
-		httpSecurity.logout(new Customizer<LogoutConfigurer<HttpSecurity>>() {
-			@Override
-			public void customize(LogoutConfigurer<HttpSecurity> httpSecurityLogoutConfigurer) {
-				//Security 공식 로그아웃 페이지
-				httpSecurityLogoutConfigurer.logoutUrl("/logout");
+				.formLogin((formLogin) -> {
+					/* 권한이 필요한 요청은 해당 url로 리다이렉트 */
+//                    formLogin.loginProcessingUrl("/user/login").disable();
 
-//				커스텀 로그아웃 페이지
-//				httpSecurityLogoutConfigurer.logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
-//						.logoutSuccessUrl("/")
-//						.invalidateHttpSession(true);
-			}
-		});
+					// 커스텀으로 할 경우 logout도 등록 해야 함
+					formLogin.loginPage("/auth/login")
+							.loginProcessingUrl("/user/login")
+							.successHandler(customLoginSuccessHandler())
+							.defaultSuccessUrl("/sample/member"); // 로그인한 후 이동할 페이지 지정
+				})
 
-		return httpSecurity.build();
+				// logout 페이지 지정
+				.logout(httpSecurityLogoutConfigurer -> {
+					//기본 페이지 , csrf를 사용할 경우는 반드시 post방식으로만 처리됨. 따라서 별도의 페이지에서 post 방식으로 처리가 되어야함
+//                    httpSecurityLogoutConfigurer.logoutUrl("/logout");
+
+					// 커스텀
+					httpSecurityLogoutConfigurer.logoutUrl("/auth/logout").logoutSuccessUrl("/");
+				})
+
+				.build();
 	}
 
 
-	//authenticationManager의 역할 - 비밀번호 암호화, 인증과 권한을 부여하는 곳
 	@Bean
+	public CustomLoginSuccessHandler customLoginSuccessHandler() {
+		return new CustomLoginSuccessHandler(passwordEncoder());
+	}
+
+
+	@Bean // authenticationManager의 역할: 비밀번호 암호화, 인증과 권한을 부여하는 곳
 	public AuthenticationManager authenticationManager(
-			HttpSecurity httpSecurity, BCryptPasswordEncoder bCryptPasswordEncoder, UserDetailsService userDetailsService) throws Exception {
-		//인증관리를 위한 객체를 선언
-		AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
-		//인증관리를 위한 객체의 주요임무에 대한 설정 - 비밀번호 암호화, 인증과 권한 지정
+			HttpSecurity httpSecurity, BCryptPasswordEncoder bCryptPasswordEncoder,
+			UserDetailsService userDetailsService)
+			throws Exception {
+		// 객체 선언
+		AuthenticationManagerBuilder authenticationManagerBuilder =
+				httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
+
+		// 겍체 빌더: 인증 권한 부여, 비밀번호 암호화
 		authenticationManagerBuilder
 				.userDetailsService(userDetailsService)
 				.passwordEncoder(bCryptPasswordEncoder);
+
 		return authenticationManagerBuilder.build();
 	}
 
-	//사용자를 메모리에 기억하게 하여서 권한과 인증을 위한 객체를 만드는 곳
 	@Bean
-	public UserDetailsService userDetailsService() {
-		UserDetails user1 = User.builder()
-				.username("user1")
-				.password(passwordEncoder().encode("1"))
-				.roles("USER")
-				.build();
-		UserDetails member = User.builder()
-				.username("member")
-				.password(passwordEncoder().encode("1"))
-				.roles("MEMBER")
-				.build();
-		UserDetails admin = User.builder()
-				.username("admin")
-				.password(passwordEncoder().encode("1"))
-				.roles("ADMIN", "MEMBER")
-				.build();
-		List<UserDetails> list = new ArrayList<>();
-		list.add(user1);
-		list.add(member);
-		list.add(admin);
-
-		return new InMemoryUserDetailsManager(list);
+	public AuthenticationProvider authenticationProvider(){
+		DaoAuthenticationProvider daoAuthenticationProvider=new DaoAuthenticationProvider();
+		daoAuthenticationProvider.setUserDetailsService(clubUserDetailsService);
+		daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+		return daoAuthenticationProvider;
 	}
-
 }

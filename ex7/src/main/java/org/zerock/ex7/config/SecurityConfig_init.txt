@@ -1,0 +1,40 @@
+package org.zerock.ex7.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+// Spring Security를 InMemory방식으로 처리한 코드
+// extends WebSecurityConfigurerAdapter을 상속받아서 진행되었던것이 springboot security 5.7.x 부터
+// @EnableWebSecurity을 사용하고 SecurityFilterChain 관련한 @Bean으로 등록해서 사용
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity    // @EnableGlobalMethodSecurity는 소멸됨.
+public class SecurityConfig {
+
+  // 액세스를 허용하는 주소들을 등록
+  private static final String[] AUTH_WHITELIST = {
+      "", "/", "/accessDenied", "/sample/all", "/sample/login", "/sample/modify",
+      "/notes/", "/notes/all", "/auth/login"
+  };
+
+  @Bean
+  protected SecurityFilterChain config(HttpSecurity httpSecurity) throws Exception {
+    // 1) 모든 요구는 인증받아야 접속가능.
+//    return httpSecurity.authorizeHttpRequests(auth -> auth.anyRequest().authenticated()).build();
+
+    // 2) Spring Security에 기본 계정인 USER로 로그인 할 때 허용되는 페이지와 그외 거부되는 페이지 설정
+    return httpSecurity
+        .authorizeHttpRequests(
+            auth -> auth
+                .requestMatchers(AUTH_WHITELIST)
+                .permitAll() //AUTH_WHITELIST만 접속 허용
+                .anyRequest() //나머지는 로그인 후 사용가능
+                .authenticated()
+        ).build();
+  }
+}

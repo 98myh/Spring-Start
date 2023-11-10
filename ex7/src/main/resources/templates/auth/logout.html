@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form class="form-signin" method="post" th:action="@{/auth/logout}">
+    <input name="_csrf" type="hidden" value="" />
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Logout</button>
+</form>
+</body>
+</html>
