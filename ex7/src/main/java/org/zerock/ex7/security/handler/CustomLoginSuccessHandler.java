@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zerock.ex7.security.dto.ClubAuthMemberDTO;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	private PasswordEncoder passwordEncoder;
 
+
 	public CustomLoginSuccessHandler(PasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -27,6 +29,18 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication auth)
 			throws IOException, ServletException {
+
+		//처음 auth로그인했을때 - 소셜 로그인이고 비밀번호가 1일경우 수정페이지로 넘어감
+		ClubAuthMemberDTO clubAuthMemberDTO=(ClubAuthMemberDTO)auth.getPrincipal();
+		boolean fromSocial=clubAuthMemberDTO.isFromSocial();
+		boolean passwordResult=passwordEncoder.matches("1",clubAuthMemberDTO.getPassword());
+
+		if (fromSocial && passwordResult){
+			redirectStrategy.sendRedirect(request,response,"/sample/modify");
+			return;
+		}
+
+		//나머지
 		List<String> roleNames = new ArrayList<>();
 
 		auth.getAuthorities().forEach(grantedAuthority -> {
@@ -46,7 +60,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 			response.sendRedirect(request.getContextPath()+"/sample/all");
 			return;
 		}
-		response.sendRedirect("/");
+		response.sendRedirect(request.getContextPath());
 	}
 
 }

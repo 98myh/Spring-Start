@@ -71,18 +71,8 @@ public class SecurityConfig {
 					.anyRequest().denyAll(); // 그외는 모두 접근 금지
 		});
 
-		//oauth2 로그인 할 경우
 
-		httpSecurity.oauth2Login(new Customizer<OAuth2LoginConfigurer<HttpSecurity>>() {
-			@Override
-			public void customize(OAuth2LoginConfigurer<HttpSecurity> httpSecurityOAuth2LoginConfigurer) {
-				httpSecurityOAuth2LoginConfigurer.loginPage("/auth/login")
-//						.loginProcessingUrl("/login")
-						.successHandler(customLoginSuccessHandler());
-			}
-		});
 
-		//database 로그인 할 경우
 		httpSecurity.formLogin(new Customizer<FormLoginConfigurer<HttpSecurity>>() {
 			@Override
 			public void customize(FormLoginConfigurer<HttpSecurity> httpSecurityFormLoginConfigurer) {
