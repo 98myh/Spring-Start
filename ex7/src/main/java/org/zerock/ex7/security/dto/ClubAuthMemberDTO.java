@@ -30,6 +30,7 @@ public class ClubAuthMemberDTO extends User implements OAuth2User {
 	public ClubAuthMemberDTO(String username, String password, boolean fromSocial, Collection<? extends GrantedAuthority> authorities) {
 		super(username, password, authorities);
 		this.email=username; //security 사용자가 생성한 계정을 데이터베이스의 계정과 연결하는 매우 중요한 부분
+		this.password=password;
 		this.fromSocial=fromSocial;
 	}
 
