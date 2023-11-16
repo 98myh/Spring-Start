@@ -4,21 +4,23 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
-import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
+import org.zerock.ex7.security.filter.ApiCheckFilter;
+import org.zerock.ex7.security.filter.ApiLoginFilter;
 import org.zerock.ex7.security.handler.CustomAccessDeniedHandler;
 import org.zerock.ex7.security.handler.CustomLoginSuccessHandler;
 import org.zerock.ex7.security.handler.CustomLogoutSuccessHandler;
@@ -39,7 +41,7 @@ public class SecurityConfig {
 
 	// 액세스를 허용하는 주소들을 등록
 	private static final String[] AUTH_WHITELIST = {"/", "/sample/all", "/auth/login", "/auth/logout",
-			"/auth/accessDenied", "/notes/", "/notes/all",};
+			"/auth/accessDenied", "/notes/**", "/notes/**/*", "/notes/all",};
 
 	@Bean
 		// 암호화시키기 위한 빈
@@ -68,8 +70,9 @@ public class SecurityConfig {
 		httpSecurity.oauth2Login(new Customizer<OAuth2LoginConfigurer<HttpSecurity>>() {
 			@Override
 			public void customize(OAuth2LoginConfigurer<HttpSecurity> httpSecurityOAuth2LoginConfigurer) {
-				httpSecurityOAuth2LoginConfigurer.loginPage("/auth/login")
-						.successHandler(customLoginSuccessHandler());
+				httpSecurityOAuth2LoginConfigurer.loginPage("/auth/login");
+//       httpSecurityOAuth2LoginConfigurer.loginProcessingUrl("");
+				httpSecurityOAuth2LoginConfigurer.successHandler(customLoginSuccessHandler());
 			}
 		});
 
@@ -77,18 +80,16 @@ public class SecurityConfig {
 		httpSecurity.formLogin(new Customizer<FormLoginConfigurer<HttpSecurity>>() {
 			@Override
 			public void customize(FormLoginConfigurer<HttpSecurity> httpSecurityFormLoginConfigurer) {
-				httpSecurityFormLoginConfigurer.loginPage("/auth/login")
-						.loginProcessingUrl("/login")
-						.successHandler(customLoginSuccessHandler());
+				httpSecurityFormLoginConfigurer.loginPage("/auth/login");
+				httpSecurityFormLoginConfigurer.loginProcessingUrl("/login");
+				httpSecurityFormLoginConfigurer.successHandler(customLoginSuccessHandler());
 			}
 		});
 		httpSecurity.logout(new Customizer<LogoutConfigurer<HttpSecurity>>() {
 			@Override
 			public void customize(LogoutConfigurer<HttpSecurity> httpSecurityLogoutConfigurer) {
 				httpSecurityLogoutConfigurer.logoutUrl("/auth/logout") // csrf사용시 form의 post와 action주소와 "/auth/logout" 일치!
-						.logoutSuccessUrl("/")
-						.logoutSuccessHandler(customLogoutSuccessHandler())
-						.invalidateHttpSession(true);
+						.logoutSuccessUrl("/").logoutSuccessHandler(customLogoutSuccessHandler()).invalidateHttpSession(true);
 			}
 		});
 		httpSecurity.csrf(new Customizer<CsrfConfigurer<HttpSecurity>>() {
@@ -112,19 +113,25 @@ public class SecurityConfig {
 				// httpSecurityRememberMeConfigurer.rememberMeServices(rememberMeServices(clubUserDetailsService));
 			}
 		});
-		// addFilterBefore(filter, class)
+		//httpSecurity가 자신이 가지고 있는 AuthenticationManager를 가져온것 , apiLoginFilter는 apiCheckFilter로 갈때 토큰을 주기위한 필터 ,apiCheckFilter는 요청한 데이터를 주기 위한 필터
+		httpSecurity.addFilterBefore(apiLoginFilter(httpSecurity.getSharedObject(AuthenticationManager.class)), UsernamePasswordAuthenticationFilter.class);
+		httpSecurity.addFilterBefore(apiCheckFilter(), UsernamePasswordAuthenticationFilter.class);
 		//httpSecurity.addFilterBefore(new ExceptionHandlerFilter(), BasicAuthenticationFilter.class);
 		return httpSecurity.build();
 	}
 
 	@Bean
-		//"mykey"는 json web token 방식일 경우 사용
-	RememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
-		TokenBasedRememberMeServices.RememberMeTokenAlgorithm encodingAlgorithm = TokenBasedRememberMeServices.RememberMeTokenAlgorithm.SHA256;
-		TokenBasedRememberMeServices rememberMe = new TokenBasedRememberMeServices("myKey", userDetailsService, encodingAlgorithm);
-		rememberMe.setMatchingAlgorithm(TokenBasedRememberMeServices.RememberMeTokenAlgorithm.MD5);
-		return rememberMe;
+	public ApiCheckFilter apiCheckFilter(){
+		return new ApiCheckFilter("/notes/**/*");
 	}
+
+	@Bean
+	public ApiLoginFilter apiLoginFilter(AuthenticationManager authenticationManager) throws Exception{
+		ApiLoginFilter apiLoginFilter=new ApiLoginFilter("/api/login");
+		apiLoginFilter.setAuthenticationManager(authenticationManager);
+		return apiLoginFilter;
+	}
+
 
 	@Bean
 	public CustomLoginSuccessHandler customLoginSuccessHandler() {
@@ -140,6 +147,16 @@ public class SecurityConfig {
 	public AccessDeniedHandler customAccessDeniedHandler() {
 		return new CustomAccessDeniedHandler();
 	}
+//	@Bean //RememberMe 관련한 Bean : "mykey"는 json web token 방식일 경우 사용
+//	RememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
+//		TokenBasedRememberMeServices.RememberMeTokenAlgorithm encodingAlgorithm = TokenBasedRememberMeServices.RememberMeTokenAlgorithm.SHA256;
+//		TokenBasedRememberMeServices rememberMe = new TokenBasedRememberMeServices("myKey", userDetailsService, encodingAlgorithm);
+//		rememberMe.setMatchingAlgorithm(TokenBasedRememberMeServices.RememberMeTokenAlgorithm.MD5);
+//		return rememberMe;
+//	}
 
-
+	@Bean  // 비밀번호 암호화, 인증과 권한 부여
+  	public AuthenticationManager authenticationManager(AuthenticationConfiguration conf) throws Exception {
+    	return conf.getAuthenticationManager(); //자체적으로 AuthenticationManager생성
+  	}
 }
