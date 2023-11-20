@@ -21,10 +21,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.zerock.ex7.security.filter.ApiCheckFilter;
 import org.zerock.ex7.security.filter.ApiLoginFilter;
+import org.zerock.ex7.security.handler.ApiLoginFailHandler;
 import org.zerock.ex7.security.handler.CustomAccessDeniedHandler;
 import org.zerock.ex7.security.handler.CustomLoginSuccessHandler;
 import org.zerock.ex7.security.handler.CustomLogoutSuccessHandler;
 import org.zerock.ex7.security.service.ClubUserDetailsService;
+import org.zerock.ex7.security.util.JWTUtil;
 
 // Spring Security를 Database을 이용하여 처리한 코드
 // extends WebSecurityConfigurerAdapter을 상속받아서 진행되었던것이 springboot security 5.7.x 부터
@@ -113,8 +115,8 @@ public class SecurityConfig {
 				// httpSecurityRememberMeConfigurer.rememberMeServices(rememberMeServices(clubUserDetailsService));
 			}
 		});
-		//httpSecurity가 자신이 가지고 있는 AuthenticationManager를 가져온것 , apiLoginFilter는 apiCheckFilter로 갈때 토큰을 주기위한 필터 ,apiCheckFilter는 요청한 데이터를 주기 위한 필터
-		httpSecurity.addFilterBefore(apiLoginFilter(httpSecurity.getSharedObject(AuthenticationManager.class)), UsernamePasswordAuthenticationFilter.class);
+		//httpSecurity가 자신이 가지고 있는 AuthenticationConfiguration를 가져온것 , apiLoginFilter는 apiCheckFilter로 갈때 토큰을 주기위한 필터 ,apiCheckFilter는 요청한 데이터를 주기 위한 필터
+		httpSecurity.addFilterBefore(apiLoginFilter(httpSecurity.getSharedObject(AuthenticationConfiguration.class)), UsernamePasswordAuthenticationFilter.class);
 		httpSecurity.addFilterBefore(apiCheckFilter(), UsernamePasswordAuthenticationFilter.class);
 		//httpSecurity.addFilterBefore(new ExceptionHandlerFilter(), BasicAuthenticationFilter.class);
 		return httpSecurity.build();
@@ -122,14 +124,20 @@ public class SecurityConfig {
 
 	@Bean
 	public ApiCheckFilter apiCheckFilter(){
-		return new ApiCheckFilter("/notes/**/*");
+		return new ApiCheckFilter("/notes/**/*",jwtUtil());
 	}
 
 	@Bean
-	public ApiLoginFilter apiLoginFilter(AuthenticationManager authenticationManager) throws Exception{
-		ApiLoginFilter apiLoginFilter=new ApiLoginFilter("/api/login");
-		apiLoginFilter.setAuthenticationManager(authenticationManager);
+	public ApiLoginFilter apiLoginFilter(AuthenticationConfiguration conf) throws Exception{
+		ApiLoginFilter apiLoginFilter=new ApiLoginFilter("/api/login",jwtUtil());
+		apiLoginFilter.setAuthenticationManager(conf.getAuthenticationManager());
+		apiLoginFilter.setAuthenticationFailureHandler(new ApiLoginFailHandler());
 		return apiLoginFilter;
+	}
+
+	@Bean
+	public JWTUtil jwtUtil(){
+		return new JWTUtil();
 	}
 
 
@@ -147,16 +155,6 @@ public class SecurityConfig {
 	public AccessDeniedHandler customAccessDeniedHandler() {
 		return new CustomAccessDeniedHandler();
 	}
-//	@Bean //RememberMe 관련한 Bean : "mykey"는 json web token 방식일 경우 사용
-//	RememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
-//		TokenBasedRememberMeServices.RememberMeTokenAlgorithm encodingAlgorithm = TokenBasedRememberMeServices.RememberMeTokenAlgorithm.SHA256;
-//		TokenBasedRememberMeServices rememberMe = new TokenBasedRememberMeServices("myKey", userDetailsService, encodingAlgorithm);
-//		rememberMe.setMatchingAlgorithm(TokenBasedRememberMeServices.RememberMeTokenAlgorithm.MD5);
-//		return rememberMe;
-//	}
 
-	@Bean  // 비밀번호 암호화, 인증과 권한 부여
-  	public AuthenticationManager authenticationManager(AuthenticationConfiguration conf) throws Exception {
-    	return conf.getAuthenticationManager(); //자체적으로 AuthenticationManager생성
-  	}
+
 }

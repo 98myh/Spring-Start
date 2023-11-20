@@ -24,23 +24,27 @@ public class SampleController {
 
 	@GetMapping("/all")
 	public void exAll(){
+		log.info("all..........");
 
 	}
 
 	@GetMapping("/member")
 	public void exMember(@AuthenticationPrincipal ClubAuthMemberDTO clubAuthMemberDTO, Model model){
+		log.info("get member..........");
 		log.info(clubAuthMemberDTO);
 		model.addAttribute("principal",clubAuthMemberDTO);
 	}
 
 	@GetMapping("/admin")
 	public void exAdmin(){
+		log.info("admin..........");
 
 	}
 
 	@GetMapping("modify")
 	public void modify(@AuthenticationPrincipal
 					   ClubAuthMemberDTO clubAuthMemberDTO, Model model) {
+		log.info("get modify..........");
 		model.addAttribute("auth", clubAuthMemberDTO);
 		List<String> roleNames = new ArrayList<>();
 		clubAuthMemberDTO.getAuthorities().forEach(authority -> {
@@ -51,6 +55,7 @@ public class SampleController {
 
 	@PostMapping("modify")
 	public String modifyForm(ClubMemberDTO clubMemberDTO, Model model) {
+		log.info("post modify..........");
 		log.info("ClubMemberDTO:" + clubMemberDTO);
 		clubMemberService.updateClubMemberDTO(clubMemberDTO);
 		return "redirect:/sample/all";
