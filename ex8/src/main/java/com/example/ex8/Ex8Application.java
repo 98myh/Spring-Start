@@ -1,4 +1,4 @@
-package org.zerock.ex8;
+package com.example.ex8;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

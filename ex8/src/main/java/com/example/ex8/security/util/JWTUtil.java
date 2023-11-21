@@ -1,8 +1,7 @@
-package org.zerock.ex8.security.util;
+package com.example.ex8.security.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.java.Log;
 
