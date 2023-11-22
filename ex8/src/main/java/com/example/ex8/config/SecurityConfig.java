@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,6 +27,10 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 
 // Spring Security를 Database을 이용하여 처리한 코드
@@ -41,32 +46,45 @@ public class SecurityConfig {
 	@Autowired
 	private MembersDetailsService membersDetailsService;
 
-	// 액세스를 허용하는 주소들을 등록
-	private static final String[] AUTH_WHITELIST = {"/", "/sample/all", "/auth/login", "/auth/logout",
-			"/auth/accessDenied", "/notes/**", "/notes/**/*", "/notes/all",};
-
-
 	// 암호화시키기 위한 빈 등록
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
+
+//	@Bean
+//	public WebSecurityCustomizer webSecurityCustomizer() {
+//		return (web) -> web.ignoring().
+////        .requestMatchers(new AntPathRequestMatcher( "/favicon.ico"))
+////        .requestMatchers(new AntPathRequestMatcher( "/css/**"))
+////        .requestMatchers(new AntPathRequestMatcher( "/js/**"))
+////        .requestMatchers(new AntPathRequestMatcher( "/img/**"))
+////        .requestMatchers(new AntPathRequestMatcher( "/lib/**"));
+//				requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
+//	}
+
 	//시큐리티 설정
 	@Bean // security 설정, 5.7.x부터 @Bean으로 등록해서 사용(리턴 타입 SecurityFilterChain)
-	protected SecurityFilterChain config(HttpSecurity httpSecurity) throws Exception {
+	protected SecurityFilterChain config(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
+
+		RequestMatcher[] matchers = {
+				new MvcRequestMatcher(introspector, "/"),
+				new MvcRequestMatcher(introspector, "/notes/**"),
+				new MvcRequestMatcher(introspector, "/notes/**/*"),
+		};
+
+
 		// httpSecurity의 http로 url을 요구할 때 권한을 매치하는 곳
 		httpSecurity.authorizeHttpRequests(auth -> {
 			log.info("auth>>" + auth);
-			auth.requestMatchers(AUTH_WHITELIST).permitAll() // 시큐리티 없이 접근 가능하도록 등록
-					.requestMatchers("/sample/admin").hasRole("ADMIN").requestMatchers("/sample/member").access(
-							// 복수개의 권한을 등록할 때
+			auth.requestMatchers(matchers).permitAll()
+					.requestMatchers(new MvcRequestMatcher(introspector, "/sample/admin")).hasRole("ADMIN")
+					.requestMatchers(new MvcRequestMatcher(introspector,"/sample/member")).access(
 							new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('MANAGER')"))
-					.requestMatchers("/sample/modify").access(
-							// 복수개의 권한을 등록할 때
+					.requestMatchers(new MvcRequestMatcher(introspector,"/sample/modify")).access(
 							new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
 					)
-					//new WebExpressionAuthorizationManager("hasAnyRole('ADMIN','MEMBER')")
 					.anyRequest().denyAll(); // 그외는 모두 접근 금지
 		});
 
@@ -126,7 +144,7 @@ public class SecurityConfig {
 
 	@Bean
 	public ApiCheckFilter apiCheckFilter(){
-		return new ApiCheckFilter("/notes/**/*",jwtUtil());
+		return new ApiCheckFilter("/notes/",jwtUtil());
 	}
 
 	@Bean
@@ -157,6 +175,5 @@ public class SecurityConfig {
 	public AccessDeniedHandler customAccessDeniedHandler() {
 		return new CustomAccessDeniedHandler();
 	}
-
 
 }

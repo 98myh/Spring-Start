@@ -18,6 +18,6 @@ public class NoteDTO {
 
 	private String content;
 
-	private String writerEmail;
+	private Long writerMno;
 	private LocalDateTime regDate, modDate;
 }

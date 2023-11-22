@@ -13,7 +13,7 @@ import java.util.List;
 
 @Log
 @RestController
-@RequestMapping("/notes")
+@RequestMapping("/notes/")
 @RequiredArgsConstructor
 public class NoteController {
 	private final NoteService noteService;
