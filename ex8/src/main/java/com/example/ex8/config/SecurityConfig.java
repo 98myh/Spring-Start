@@ -39,7 +39,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 @Log4j2
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @EnableMethodSecurity    // @EnableGlobalMethodSecurity는 소멸됨.
 public class SecurityConfig {
 
@@ -66,12 +66,12 @@ public class SecurityConfig {
 
 	//시큐리티 설정
 	@Bean // security 설정, 5.7.x부터 @Bean으로 등록해서 사용(리턴 타입 SecurityFilterChain)
-	protected SecurityFilterChain config(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
+	protected SecurityFilterChain config(HttpSecurity httpSecurity) throws Exception {
 
 		RequestMatcher[] matchers = {
-				new MvcRequestMatcher(introspector, "/"),
-				new MvcRequestMatcher(introspector, "/notes/**"),
-				new MvcRequestMatcher(introspector, "/notes/**/*"),
+				new AntPathRequestMatcher("/"),
+				new AntPathRequestMatcher("/notes/**"),
+				new AntPathRequestMatcher("/notes/**/*"),
 		};
 
 
@@ -79,12 +79,12 @@ public class SecurityConfig {
 		httpSecurity.authorizeHttpRequests(auth -> {
 			log.info("auth>>" + auth);
 			auth.requestMatchers(matchers).permitAll()
-					.requestMatchers(new MvcRequestMatcher(introspector, "/sample/admin")).hasRole("ADMIN")
-					.requestMatchers(new MvcRequestMatcher(introspector,"/sample/member")).access(
-							new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('MANAGER')"))
-					.requestMatchers(new MvcRequestMatcher(introspector,"/sample/modify")).access(
-							new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
-					)
+					.requestMatchers(new AntPathRequestMatcher("/sample/admin")).hasRole("ADMIN")
+//					.requestMatchers(new AntPathRequestMatcher("/sample/member")).access(
+//							new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('MANAGER')"))
+//					.requestMatchers(new AntPathRequestMatcher("/sample/modify")).access(
+//							new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
+//					)
 					.anyRequest().denyAll(); // 그외는 모두 접근 금지
 		});
 
@@ -144,7 +144,7 @@ public class SecurityConfig {
 
 	@Bean
 	public ApiCheckFilter apiCheckFilter(){
-		return new ApiCheckFilter("/notes/",jwtUtil());
+		return new ApiCheckFilter("/notes/*",jwtUtil());
 	}
 
 	@Bean
